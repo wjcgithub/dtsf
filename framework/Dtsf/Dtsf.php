@@ -8,9 +8,10 @@ class Dtsf
 {
     final public static function run()
     {
-        $http = new Swoole\Http\Server('0.0.0.0', 9501);
+        Config::load();
+        $http = new Swoole\Http\Server(Config::get('host'), Config::get('port'));
         $http->set([
-            'worker_num' => 1
+            'worker_num' => Config::get('worker_num')
         ]);
 
         $http->on('request', function ($request, $response){

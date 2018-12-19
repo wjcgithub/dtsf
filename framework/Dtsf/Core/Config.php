@@ -22,7 +22,7 @@ class Config
      */
     public static function load()
     {
-        $configPath = dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR . 'config';
+        $configPath = dirname(dirname(dirname(__DIR__))) . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR . 'config';
         self::$configMap = require $configPath . DIRECTORY_SEPARATOR . 'default.php';
     }
 
