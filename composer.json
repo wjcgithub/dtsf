@@ -9,7 +9,11 @@
             "email": "wangjichao@xin.com"
         }
     ],
-    "require": {},
+    "require": {
+        "php": ">=7.0",
+        "nikic/fast-route": "*",
+        "php-amqplib/php-amqplib": "^2.8"
+    },
     "autoload": {
         "classmap": [],
         "psr-4": {

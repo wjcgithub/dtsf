@@ -1,1 +1,4 @@
 /application/Log/*
+.idea/*
+/vendor/*
+composer.lock
