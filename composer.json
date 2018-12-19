@@ -1,0 +1,22 @@
+{
+    "name": "evolution/swoole",
+    "description": "ddf->dtq framework",
+    "type": "project",
+    "license": "apache",
+    "authors": [
+        {
+            "name": "wangjichao",
+            "email": "wangjichao@xin.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "classmap": [],
+        "psr-4": {
+            "Dtsf\\": "framework/Dtsf/",
+            "App\\": "application/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
