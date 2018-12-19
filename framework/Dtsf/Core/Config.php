@@ -8,6 +8,8 @@
 
 namespace Dtsf\Core;
 
+use Dtsf\Dtsf;
+
 class Config
 {
     /**
@@ -22,10 +24,16 @@ class Config
      */
     public static function load()
     {
-        $configPath = dirname(dirname(dirname(__DIR__))) . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR . 'config';
-        self::$configMap = require $configPath . DIRECTORY_SEPARATOR . 'default.php';
+        $configPath = Dtsf::$applicationPath . DS . 'Config';
+        self::$configMap = require $configPath . DS . 'default.php';
     }
 
+    /**
+     * get config of default.php
+     *
+     * @param $key
+     * @return null
+     */
     public static function get($key)
     {
         if (isset(self::$configMap[$key])) {
