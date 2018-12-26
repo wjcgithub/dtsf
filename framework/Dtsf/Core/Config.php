@@ -34,12 +34,11 @@ class Config
      * @param $key
      * @return null
      */
-    public static function get($key)
+    public static function get($key, $def = null)
     {
         if (isset(self::$configMap[$key])) {
             return self::$configMap[$key];
         }
-
-        return null;
+        return $def;
     }
 }

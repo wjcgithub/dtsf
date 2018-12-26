@@ -7,6 +7,7 @@ use Dtsf\Core\Route;
 use Dtsf\Coroutine\Context;
 use Dtsf\Coroutine\Coroutine;
 use Dtsf\Pool\ContextPool;
+use Dtsf\Pool\MysqlPool;
 use Swoole;
 
 class Dtsf
@@ -33,6 +34,9 @@ class Dtsf
 
         //init log
         Log::init();
+
+        $timeZone = Config::get('time_zone', 'Asia/Shanghai');
+        \date_default_timezone_set($timeZone);
     }
 
     final public static function run()
@@ -42,6 +46,28 @@ class Dtsf
         $http->set([
             'worker_num' => Config::get('worker_num')
         ]);
+
+        $http->on('workerStart', function (\Swoole\Http\Server $serv, int $worker_id){
+            if (function_exists('opcache_reset')){
+                //清除opcache缓存, swoole模式下建议关闭opcache
+                \opcache_reset();
+            }
+
+            try{
+                $mysqlConfig = Config::get('mysql');
+                if (!empty($mysqlConfig)){
+                    //初始化mysql链接池
+                    MysqlPool::getInstance($mysqlConfig);
+                }
+            }catch (\Exception $e) {
+                Log::error($e->getMessage());
+                print_r($e->getMessage());
+                $serv->shutdown();
+            }catch (\Throwable $throwable) {
+                Log::error($throwable->getMessage());
+                $serv->shutdown();
+            }
+        });
 
         $http->on('request', function ($request, $response){
             if ($request->server['path_info'] == '/favicon.ico'){

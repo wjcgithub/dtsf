@@ -46,7 +46,7 @@ class MysqlPool
     {
         if (empty($this->pool)) {
             $this->config = $config;
-            $this->pool = new chan($config['pool_size']);
+            $this->pool = new \chan($config['pool_size']);
             for ($i = 0; $i < $config['pool_size']; $i++) {
                 $mysql = new Mysql();
                 $res = $mysql->connect($config);

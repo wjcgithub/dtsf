@@ -11,7 +11,7 @@ return [
             'port' => 3306,          //数据库端口
             'user' => 'root',        //数据库用户名
             'password' => 'brave', //数据库密码
-            'database' => 'xin_dtq',   //默认数据库名
+            'database' => 'test',   //默认数据库名
             'timeout' => 0.5,       //数据库连接超时时间
             'charset' => 'utf8mb4', //默认字符集
             'strict_type' => true,  //ture，会自动表数字转为int类型
@@ -22,7 +22,7 @@ return [
                 'port' => 3306,          //数据库端口
                 'user' => 'root',        //数据库用户名
                 'password' => 'brave', //数据库密码
-                'database' => 'xin_dtq',   //默认数据库名
+                'database' => 'test',   //默认数据库名
                 'timeout' => 0.5,       //数据库连接超时时间
                 'charset' => 'utf8mb4', //默认字符集
                 'strict_type' => true,  //ture，会自动表数字转为int类型
