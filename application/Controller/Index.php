@@ -9,11 +9,16 @@
 namespace App\Controller;
 
 
+use Dtsf\Pool\Context;
+
 class Index
 {
     public function index()
     {
-        return 'i am family by route';
+        //通过context拿到$request
+        $context = Context::getContext();
+        $request = $context->getRequest();
+        return 'i am family by route'. json_encode($request->get);
     }
 
     public function test()

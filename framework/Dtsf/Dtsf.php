@@ -4,6 +4,8 @@ namespace Dtsf;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Core\Route;
+use Dtsf\Coroutine\Context;
+use Dtsf\Coroutine\Coroutine;
 use Swoole;
 
 class Dtsf
@@ -46,6 +48,17 @@ class Dtsf
                 return;
             }
             try{
+                //初始化根协程ID
+                $coId = Coroutine::setBaseId();
+                //初始化上下文
+                $context = new Context($request, $response);
+                //存放到容器pool
+                \Dtsf\Pool\Context::set($context);
+                //协程退出,自动清空
+                defer(function () use ($coId){
+                    //清空当前pool的上下文, 释放资源
+                    \Dtsf\Pool\Context::clear($coId);
+                });
                 $result = Route::dispatch($request->server['path_info']);
                 $response->end($result);
             }catch (\Exception $e) {
