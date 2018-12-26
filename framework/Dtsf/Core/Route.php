@@ -14,7 +14,7 @@ class Route
     public static function dispatch($path)
     {
         if (empty($path) || '/' == $path){
-            $controller = 'Index';
+            $controller = 'IndexController';
             $method = 'index';
         } else {
             $maps = explode('/', $path);
@@ -22,7 +22,7 @@ class Route
             $method = $maps[2];
         }
 
-        $controllerClass = 'App\\Controller\\'.$controller;
+        $controllerClass = 'App\\Controller\\'.$controller.'Controller';
         $class = new $controllerClass;
 
         return $class->$method();

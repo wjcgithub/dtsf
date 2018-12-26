@@ -15,7 +15,7 @@ use Dtsf\Coroutine\Coroutine;
  * @package Dtsf\Pool
  * @desc context pool, 请求之间隔离, 请求之内任何地方可以存取
  */
-class Context
+class ContextPool
 {
     /**
      * @var array
