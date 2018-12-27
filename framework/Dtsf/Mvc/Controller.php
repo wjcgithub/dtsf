@@ -15,6 +15,7 @@ class Controller
 {
     protected $request;
 
+    const CODE_SUCCESS = 200;
     const _CONTROLLER_KEY_ = '__CTR__';
     const _METHOD_KEY_ = '__METHOD__';
 

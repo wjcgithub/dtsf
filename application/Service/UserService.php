@@ -18,7 +18,7 @@ class UserService
 
     public function getUserInfoByUid($id)
     {
-        return UserDao::getInstance()->fetchById();
+        return UserDao::getInstance()->fetchById($id);
     }
 
     public function getUserInfoList()

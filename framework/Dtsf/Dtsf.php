@@ -6,8 +6,10 @@ use Dtsf\Core\Log;
 use Dtsf\Core\Route;
 use Dtsf\Coroutine\Context;
 use Dtsf\Coroutine\Coroutine;
+use Dtsf\Mvc\Controller;
 use Dtsf\Pool\ContextPool;
 use Dtsf\Pool\MysqlPool;
+use EasySwoole\Http\Message\Status;
 use EasySwoole\Http\Request as EsRequest;
 use EasySwoole\Http\Response as EsResponse;
 use Swoole;
@@ -77,7 +79,7 @@ class Dtsf
                 $coId = Coroutine::setBaseId();
                 //初始化上下文
                 $request = new EsRequest($request);
-                $response = new EsResponse($response);
+//                $response = new EsResponse($response);
                 $context = new Context($request, $response);
                 //存放到容器pool
                 ContextPool::set($context);
@@ -88,15 +90,18 @@ class Dtsf
                 });
                 $result = Route::dispatch();
                 $response->end($result);
-            }catch (\Exception $e) {
-                Log::alert($e->getMessage(), $e->getTrace());
-                $response->end($e->getMessage());
-            }catch (\Error $e) {
-                Log::emergency($e->getMessage(), $e->getTrace());
-                $response->withStatus(500);
-            }catch (\Throwable $e) {
-                Log::emergency($e->getMessage(), $e->getTrace());
-                $response->withStatus(500);
+            }catch (\Exception $exception) {
+                Log::error($exception);
+                $msg = 'msg '.$exception->getMessage().' file:'.$exception->getFile().' line:'.$exception->getLine().' trace:'.$exception->getTraceAsString();
+                $response->end($msg);
+            }catch (\Error $exception) {
+                Log::error($exception);
+                $msg = 'msg '.$exception->getMessage().' file:'.$exception->getFile().' line:'.$exception->getLine().' trace:'.$exception->getTraceAsString();
+                $response->end($msg);
+            }catch (\Throwable $exception) {
+                Log::error($exception);
+                $msg = 'msg '.$exception->getMessage().' file:'.$exception->getFile().' line:'.$exception->getLine().' trace:'.$exception->getTraceAsString();
+                $response->end($msg);
             }
         });
 

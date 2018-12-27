@@ -16,20 +16,20 @@ class UserController extends Controller
 {
     public function user()
     {
-        if (empty($this->request->get['uid'])) {
-            throw new \Exception('Uid 不能为空');
+        if (empty($this->request->getQueryParam('uid'))) {
+            throw new \InvalidArgumentException('Uid 不能为空');
         }
 
-        $result = UserService::getInstance()->getUserInfoByUid($this->request->get['uid']);
+        $result = UserService::getInstance()->getUserInfoByUid($this->request->getQueryParam('uid'));
         return json_encode($result);
     }
 
     public function add()
     {
         $array = [
-            'name' => $this->request->get['name'],
-            'course' => $this->request->get['course'],
-            'score' => $this->request->get['score'],
+            'name' => $this->request->getQueryParam('name'),
+            'course' => $this->request->getQueryParam('course'),
+            'score' => $this->request->getQueryParam('score'),
         ];
 
         return UserService::getInstance()->add($array);
@@ -38,18 +38,24 @@ class UserController extends Controller
     public function update()
     {
         $array = [
-            'name' => $this->request->get['name'],
-            'course' => $this->request->get['course'],
-            'score' => $this->request->get['score'],
+            'name' => $this->request->getQueryParam('name'),
+            'course' => $this->request->getQueryParam('course'),
+            'score' => $this->request->getQueryParam('score'),
         ];
 
-        $id = $this->request->get['id'];
+        $id = $this->request->getQueryParam('id');
         return UserService::getInstance()->updateById($array, $id);
     }
 
     public function delete()
     {
-        $id = $this->request->get['id'];
+        $id = $this->request->getQueryParam('id');
         return UserService::getInstance()->deleteById($id);
+    }
+
+    public function list()
+    {
+        $result = UserService::getInstance()->getUserInfoList();
+        return json_encode($result);
     }
 }
