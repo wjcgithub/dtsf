@@ -8,6 +8,8 @@ use Dtsf\Coroutine\Context;
 use Dtsf\Coroutine\Coroutine;
 use Dtsf\Pool\ContextPool;
 use Dtsf\Pool\MysqlPool;
+use EasySwoole\Http\Request as EsRequest;
+use EasySwoole\Http\Response as EsResponse;
 use Swoole;
 
 class Dtsf
@@ -70,14 +72,12 @@ class Dtsf
         });
 
         $http->on('request', function ($request, $response){
-            if ($request->server['path_info'] == '/favicon.ico'){
-                $response->end('');
-                return;
-            }
             try{
                 //初始化根协程ID
                 $coId = Coroutine::setBaseId();
                 //初始化上下文
+                $request = new EsRequest($request);
+                $response = new EsResponse($response);
                 $context = new Context($request, $response);
                 //存放到容器pool
                 ContextPool::set($context);
@@ -86,17 +86,17 @@ class Dtsf
                     //清空当前pool的上下文, 释放资源
                     ContextPool::clear($coId);
                 });
-                $result = Route::dispatch($request->server['path_info']);
+                $result = Route::dispatch();
                 $response->end($result);
             }catch (\Exception $e) {
                 Log::alert($e->getMessage(), $e->getTrace());
                 $response->end($e->getMessage());
             }catch (\Error $e) {
                 Log::emergency($e->getMessage(), $e->getTrace());
-                $response->status(500);
+                $response->withStatus(500);
             }catch (\Throwable $e) {
                 Log::emergency($e->getMessage(), $e->getTrace());
-                $response->status(500);
+                $response->withStatus(500);
             }
         });
 
