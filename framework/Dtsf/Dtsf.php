@@ -1,15 +1,16 @@
 <?php
 namespace Dtsf;
 
+use App\Dao\RedisCacheDao;
+use App\Dao\RedisDbDao;
+use App\Providers\DtsfInitProvider;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Core\Route;
 use Dtsf\Coroutine\Context;
 use Dtsf\Coroutine\Coroutine;
-use Dtsf\Mvc\Controller;
 use Dtsf\Pool\ContextPool;
 use Dtsf\Pool\MysqlPool;
-use EasySwoole\Http\Message\Status;
 use EasySwoole\Http\Request as EsRequest;
 use EasySwoole\Http\Response as EsResponse;
 use Swoole;
@@ -58,14 +59,9 @@ class Dtsf
             }
 
             try{
-                $mysqlConfig = Config::get('mysql');
-                if (!empty($mysqlConfig)){
-                    //初始化mysql链接池
-                    MysqlPool::getInstance($mysqlConfig);
-                }
+                DtsfInitProvider::poolInit();
             }catch (\Exception $e) {
                 Log::error($e->getMessage());
-                print_r($e->getMessage());
                 $serv->shutdown();
             }catch (\Throwable $throwable) {
                 Log::error($throwable->getMessage());
@@ -75,8 +71,14 @@ class Dtsf
 
         $http->on('request', function ($request, $response){
             try{
+                if ($request->server['path_info'] == '/favicon.ico'){
+                    $response->end('');
+                    return;
+                }
                 //初始化根协程ID
                 $coId = Coroutine::setBaseId();
+                print_r('request pool'.$coId.PHP_EOL);
+
                 //初始化上下文
                 $request = new EsRequest($request);
 //                $response = new EsResponse($response);
@@ -85,6 +87,9 @@ class Dtsf
                 ContextPool::set($context);
                 //协程退出,自动清空
                 defer(function () use ($coId){
+//                    print_r(MysqlPool::getInstance()->getLength().PHP_EOL);
+//                    print_r(RedisCacheDao::getInstance()->getLength().PHP_EOL);
+//                    print_r(RedisDbDao::getInstance()->getLength().PHP_EOL);
                     //清空当前pool的上下文, 释放资源
                     ContextPool::clear($coId);
                 });

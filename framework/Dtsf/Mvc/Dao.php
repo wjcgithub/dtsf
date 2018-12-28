@@ -65,8 +65,8 @@ class Dao
         $coId = Coroutine::getId();
         if (!empty($this->dbs[$coId])) {
             $mysql = $this->dbs[$coId];
-            MysqlPool::getInstance()->put($mysql);
             unset($this->dbs[$coId]);
+            MysqlPool::getInstance()->put($mysql);
         }
     }
 
@@ -163,7 +163,6 @@ class Dao
         if (!empty($onDuplicate)) {
             $query .= 'ON DUPLICATE KEY UPDATE ' . $onDuplicate;
         }
-        echo $query . PHP_EOL;
         $result = $this->db->query($query);
         if (!empty($result['insert_id'])) {
             return $result['insert_id'];

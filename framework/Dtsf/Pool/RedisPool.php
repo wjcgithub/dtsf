@@ -9,14 +9,15 @@
 namespace Dtsf\Pool;
 
 
-use Dtsf\Db\Mysql;
-use RuntimeException;
+use Dtsf\Core\Config;
+use Dtsf\Db\Redis;
 
-class MysqlPool
+class RedisPool
 {
     private static $instance;
     private $pool;
     private $config;
+
 
     /**
      * 获取一个链接池实例
@@ -24,16 +25,18 @@ class MysqlPool
      * @param null $config
      * @return static
      */
-    public static function getInstance($config = null)
+    public static function getInstance($name = 'default')
     {
-        if (empty(self::$instance)) {
-            if (empty($config)) {
-                throw new RuntimeException("Mysql config empty");
-            }
-            self::$instance = new static($config);
+//        print_r($name);
+        if (empty($config = Config::get('redis'))) {
+            throw new \RuntimeException("Redis config empty");
         }
 
-        return self::$instance;
+        if (!empty($config[$name]) && empty(self::$instance[$name])) {
+            self::$instance[$name] = new static($config[$name]);
+        }
+
+        return self::$instance[$name];
     }
 
     /**
@@ -48,12 +51,12 @@ class MysqlPool
             $this->config = $config;
             $this->pool = new \chan($config['pool_size']);
             for ($i = 0; $i < $config['pool_size']; $i++) {
-                $mysql = new Mysql();
-                $res = $mysql->connect($config);
-                if ($res == false) {
-                    throw new \RuntimeException('Failed to connect mysql server.');
+                $redis = new Redis();
+                $res = $redis->connect($config);
+                if ($res === false) {
+                    throw new \RuntimeException('Failed to connect redis server.');
                 } else {
-                    $this->put($mysql);
+                    $this->put($redis);
                 }
             }
         }
@@ -64,9 +67,9 @@ class MysqlPool
      *
      * @param $mysql
      */
-    public function put($mysql)
+    public function put($redis)
     {
-        $this->pool->push($mysql);
+        $this->pool->push($redis);
     }
 
     /**
@@ -76,12 +79,13 @@ class MysqlPool
      */
     public function get()
     {
-        $mysql = $this->pool->pop($this->config['pool_get_timeout']);
-        if (false === $mysql) {
-            throw new \RuntimeException("Get mysql timeout, all mysql connection is used");
+        //@todo 如果为空要从新初始化连接池
+        $redis = $this->pool->pop($this->config['pool_get_timeout']);
+        if (false === $redis) {
+            throw new \RuntimeException("Get redis timeout on coroutine, all mysql connection is used");
         }
 
-        return $mysql;
+        return $redis;
     }
 
     /**

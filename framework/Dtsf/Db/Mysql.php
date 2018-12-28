@@ -97,7 +97,7 @@ class Mysql
     }
 
     /**
-     * @param $name
+     * @param $name  mysql执行命令的方法名
      * @param $arguments
      * @return mixed
      * @desc 利用__call,实现操作mysql,并能做断线重连等相关检测
@@ -110,7 +110,6 @@ class Mysql
         $db = $res['db'];
 //        $result = call_user_func_array([$db, $name], $arguments);
         $result = $db->$name($sql);
-        Log::info($sql);
         if (false === $result) {
             Log::warning('mysql query false', [$sql]);
             if (!$db->connected) { //断线重连

@@ -21,10 +21,6 @@ class Route
         $context = ContextPool::getContext();
         $request = $context->getRequest();
         $path = $request->getUri()->getPath();
-        if ($path === '/favicon.ico') {
-            return '';
-        }
-
         //获取自己配置的路由规则
         $r = Config::get('router');
         //没有路由配置或者配置不可执行, 则走默认路由
