@@ -1,8 +1,6 @@
 <?php
 namespace Dtsf;
 
-use App\Dao\RedisCacheDao;
-use App\Dao\RedisDbDao;
 use App\Providers\DtsfInitProvider;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
@@ -10,9 +8,6 @@ use Dtsf\Core\Route;
 use Dtsf\Coroutine\Context;
 use Dtsf\Coroutine\Coroutine;
 use Dtsf\Pool\ContextPool;
-use Dtsf\Pool\MysqlPool;
-use EasySwoole\Http\Request as EsRequest;
-use EasySwoole\Http\Response as EsResponse;
 use Swoole;
 
 class Dtsf
@@ -31,85 +26,107 @@ class Dtsf
             define('DS', DIRECTORY_SEPARATOR);
         }
         self::$rootPath = dirname(dirname(__DIR__));
-        self::$frameworkPath = self::$rootPath.DS.'framework';
-        self::$applicationPath = self::$rootPath.DS.'application';
-
+        self::$frameworkPath = self::$rootPath . DS . 'framework';
+        self::$applicationPath = self::$rootPath . DS . 'application';
         //init config
         Config::load();
-
-        //init log
-        Log::init();
-
         $timeZone = Config::get('time_zone', 'Asia/Shanghai');
         \date_default_timezone_set($timeZone);
     }
 
+    /**
+     * start application
+     */
     final public static function run()
     {
-        self::_init();
-        $http = new Swoole\Http\Server(Config::get('host'), Config::get('port'));
-        $http->set([
-            'worker_num' => Config::get('worker_num')
-        ]);
+        try {
+            //启动前初始化
+            self::_init();
+            $http = new Swoole\Http\Server(Config::get('host'), Config::get('port'));
+            $http->set(Config::get('swoole_setting'));
 
-        $http->on('workerStart', function (\Swoole\Http\Server $serv, int $worker_id){
-            if (function_exists('opcache_reset')){
-                //清除opcache缓存, swoole模式下建议关闭opcache
-                \opcache_reset();
-            }
+            $http->on('start', function (Swoole\Http\Server $serv) {
+                //日志初始化
+                Log::init();
+                file_put_contents(self::$rootPath . DS . 'bin' . DS . 'master.pid', $serv->master_pid);
+                file_put_contents(self::$rootPath . DS . 'bin' . DS . 'manager.pid', $serv->manager_pid);
+                Log::info("http server start! {host}: {port}, masterId:{masterId}, managerId: {managerId}", [
+                    '{host}' => Config::get('host'),
+                    '{port}' => Config::get('port'),
+                    '{masterId}' => $serv->master_pid,
+                    '{managerId}' => $serv->manager_pid,
+                ], 'start');
+            });
 
-            try{
-                DtsfInitProvider::poolInit();
-            }catch (\Exception $e) {
-                Log::error($e->getMessage());
-                $serv->shutdown();
-            }catch (\Throwable $throwable) {
-                Log::error($throwable->getMessage());
-                $serv->shutdown();
-            }
-        });
+            $http->on('shutdown', function () {
+                //服务关闭，删除进程id
+                unlink(self::$rootPath . 'DS' . 'bin' . DS . 'master.pid');
+                unlink(self::$rootPath . 'DS' . 'bin' . DS . 'manager.pid');
+                Log::info("http server shutdown", [], 'shutdown');
+            });
 
-        $http->on('request', function ($request, $response){
-            try{
-                if ($request->server['path_info'] == '/favicon.ico'){
-                    $response->end('');
-                    return;
+            $http->on('workerStart', function (Swoole\Http\Server $serv, int $worker_id) {
+                Log::info("worker {worker_id} started.", ['{worker_id}' => $worker_id], 'start');
+                if (function_exists('opcache_reset')) {
+                    //清除opcache缓存, swoole模式下建议关闭opcache
+                    \opcache_reset();
                 }
-                //初始化根协程ID
-                $coId = Coroutine::setBaseId();
-                print_r('request pool'.$coId.PHP_EOL);
+                try {
+                    //加载配置，让此处加载的配置可热更新
+                    Config::loadLazy();
+                    //日志初始化
+                    Log::init();
+                    //给用户自己的权利去初始化
+                    DtsfInitProvider::poolInit();
+                } catch (\Exception $e) {
+                    Log::error($e->getMessage());
+                    $serv->shutdown();
+                } catch (\Throwable $throwable) {
+                    Log::error($throwable->getMessage());
+                    $serv->shutdown();
+                }
+            });
 
+            //accept http request
+            $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) {
+                //                $db = PoolManager::getInstance()->getPool(\App\Utils\MysqlPool::class)->getObj(1);
+                //                $aa = $db->where('id',1)->get('student');
+                //初始化根协程ID
+                Coroutine::setBaseId();
                 //初始化上下文
-                $request = new EsRequest($request);
-//                $response = new EsResponse($response);
                 $context = new Context($request, $response);
                 //存放到容器pool
-                ContextPool::set($context);
+                ContextPool::put($context);
                 //协程退出,自动清空
-                defer(function () use ($coId){
-//                    print_r(MysqlPool::getInstance()->getLength().PHP_EOL);
-//                    print_r(RedisCacheDao::getInstance()->getLength().PHP_EOL);
-//                    print_r(RedisDbDao::getInstance()->getLength().PHP_EOL);
+                defer(function () {
                     //清空当前pool的上下文, 释放资源
-                    ContextPool::clear($coId);
+                    ContextPool::release();
                 });
-                $result = Route::dispatch();
-                $response->end($result);
-            }catch (\Exception $exception) {
-                Log::error($exception);
-                $msg = 'msg '.$exception->getMessage().' file:'.$exception->getFile().' line:'.$exception->getLine().' trace:'.$exception->getTraceAsString();
-                $response->end($msg);
-            }catch (\Error $exception) {
-                Log::error($exception);
-                $msg = 'msg '.$exception->getMessage().' file:'.$exception->getFile().' line:'.$exception->getLine().' trace:'.$exception->getTraceAsString();
-                $response->end($msg);
-            }catch (\Throwable $exception) {
-                Log::error($exception);
-                $msg = 'msg '.$exception->getMessage().' file:'.$exception->getFile().' line:'.$exception->getLine().' trace:'.$exception->getTraceAsString();
-                $response->end($msg);
-            }
-        });
-
-        $http->start();
+                try {
+                    //自动路由
+                    $result = Route::dispatch();
+                    $response->end($result);
+                } catch (\Exception $e) { //程序异常
+                    file_put_contents('/tmp/pool.txt', 'error--0', 'a+');
+                    Log::exception($e);
+                    $context->getResponse()->withStatus(500);
+                } catch (\Error $e) { //程序错误，如fatal error
+                    file_put_contents('/tmp/pool.txt', 'error--1', 'a+');
+                    Log::exception($e);
+                    $context->getResponse()->withStatus(500);
+                } catch (\Throwable $e) {  //兜底
+                    file_put_contents('/tmp/pool.txt', 'error--2', 'a+');
+                    Log::exception($e);
+                    $context->getResponse()->withStatus(500);
+                }
+            });
+            $http->start();
+        } catch (\Exception $e) {
+            file_put_contents('/tmp/pool.txt', 'Exception -3', 'a+');
+            print_r($e);
+        } catch (\Throwable $throwable) {
+            file_put_contents('/tmp/pool.txt', 'Throwable -4', 'a+');
+            print_r($throwable);
+        }
     }
 }

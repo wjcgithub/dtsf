@@ -19,7 +19,7 @@ class RedisService
     public function get($key)
     {
         $r1 = RedisDao::getInstance('db')->get($key);
-        $r2 = RedisDao::getInstance()->get($key);
+        $r2 = RedisDao::getInstance('default')->get($key);
         return json_encode(compact('r1', 'r2'));
     }
 }

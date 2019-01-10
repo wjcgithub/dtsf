@@ -9,6 +9,7 @@
 namespace Dtsf\Core;
 
 use Dtsf\Dtsf;
+use Dtsf\Helper\Dir;
 
 class Config
 {
@@ -17,7 +18,7 @@ class Config
      *
      * @var
      */
-    public static $configMap;
+    public static $config;
 
     /**
      * 读取配置文件, 默认是application/config/default.php
@@ -25,7 +26,19 @@ class Config
     public static function load()
     {
         $configPath = Dtsf::$applicationPath . DS . 'Config';
-        self::$configMap = require $configPath . DS . 'default.php';
+        self::$config = \Noodlehaus\Config::load($configPath . DS . 'default.php');
+    }
+
+
+    /**
+     * @desc 读取配置，默认是application/config 下除default所有的php文件
+     *          非default配置，可以热加载
+     */
+    public static function loadLazy()
+    {
+        $configPath = Dtsf::$applicationPath . DS . 'Config/lazy';
+        $config = new \Noodlehaus\Config($configPath);
+        self::$config->merge($config);
     }
 
     /**
@@ -34,11 +47,8 @@ class Config
      * @param $key
      * @return null
      */
-    public static function get($key, $def = null)
+    public static function get($key, $def = '')
     {
-        if (isset(self::$configMap[$key])) {
-            return self::$configMap[$key];
-        }
-        return $def;
+        return self::$config->get($key, $def);
     }
 }

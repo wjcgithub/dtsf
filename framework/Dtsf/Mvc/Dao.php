@@ -9,8 +9,11 @@
 namespace Dtsf\Mvc;
 
 
+use Dtsf\Core\Config;
+use Dtsf\Core\Log;
 use Dtsf\Coroutine\Coroutine;
 use Dtsf\Pool\MysqlPool;
+use EasySwoole\Component\Pool\PoolManager;
 
 class Dao
 {
@@ -35,25 +38,51 @@ class Dao
 
     //主键字段名
     private $pkId;
+    /**
+     * @var 数据库配置名称, 用于处理多个数据库
+     */
+    private $dbTag;
 
 
     public function __construct($entity)
     {
         $this->entity = $entity;
+    }
+
+    /**
+     * @param $dbTag
+     * @desc 更换数据库连接池
+     */
+    public function setDbName($dbTag)
+    {
+        $this->dbTag = $dbTag;
+    }
+
+    /**
+     * 获取一个链接类型的db实例
+     *
+     * @param string $dbTag
+     * @return mixed
+     */
+    public function getDb($dbTag = 'default')
+    {
         $coId = Coroutine::getId();
-        if (empty($this->dbs[$coId])) {
-            //不同协程不能复用mysql连接，所以通过协程id进行资源隔离
-            //达到同一协程只用一个mysql连接，不同协程用不同的mysql连接
-            $this->dbs[$coId] = MysqlPool::getInstance()->get();
-            $entityRef = new \ReflectionClass($this->entity);
-            $this->table = $entityRef->getConstant('TABLE_NAME');
-            $this->pkId = $entityRef->getConstant('PK_ID');
+        if (empty($this->dbs[$coId][$dbTag])) {
+            //不同协程不能复用mysql链接, 所以通过协程id进行资源隔离
+            //达到同一个协程只用一个mysql链接, 不同协程用不同的mysql链接
+            $this->dbs[$coId][$dbTag] = PoolManager::getInstance()->getPool(Config::get('mysql.'.$dbTag.'.class'))
+                ->getObj(Config::get('mysql.'.$dbTag.'.pool_get_timeout'));
             defer(function () {
-                //利用协程的defer特性，自动回收资源
                 $this->recycle();
             });
+
         }
-        $this->db = $this->dbs[$coId];
+
+        if (empty($this->dbs[$coId][$dbTag])) {
+            Log::emergency($dbTag.'数据库不够用了', 'dbpool');
+        }
+        return $this->dbs[$coId][$dbTag];
+
     }
 
     /**
@@ -62,11 +91,20 @@ class Dao
      */
     public function recycle()
     {
+//        print_r("pool count: ".count($this->dbs). "\r\n");
+//        \Swoole\Coroutine::sleep(2);
         $coId = Coroutine::getId();
         if (!empty($this->dbs[$coId])) {
-            $mysql = $this->dbs[$coId];
+            $mysqlPool = $this->dbs[$coId];
             unset($this->dbs[$coId]);
-            MysqlPool::getInstance()->put($mysql);
+            if (!empty($mysqlPool)) {
+                foreach ($mysqlPool as $dbTag => $db) {
+                    $t = PoolManager::getInstance()->getPool(Config::get('mysql.'.$dbTag.'.class'));
+//                    print_r('before:'.$t->getLength()."\r\n");
+                    $t->recycleObj($db);
+//                    print_r('after:'.$t->getLength()."\r\n");
+                }
+            }
         }
     }
 
@@ -87,6 +125,13 @@ class Dao
      */
     public function fetchById($id, $fields = '*')
     {
+//        $start = microtime(true);
+//        $this->db->query("select sleep(5)");
+//        echo "我是第一个sleep五秒之后\n";
+//        $ret = $this->db->query("select id from student limit 1");#2
+//        var_dump($ret);
+//        $use = microtime(true) - $start;
+//        echo "协程mysql输出用时：" . $use . PHP_EOL;
         return $this->fetchEntity("{$this->pkId} = {$id}", $fields);
     }
 
@@ -146,7 +191,10 @@ class Dao
         if ($limit) {
             $query .= " limit {$limit}";
         }
-        return $this->db->query($query);
+
+        return $this->getDb()->where('id',1)->get('student');
+
+//        return $this->getDb()->query($query);
     }
 
     /**

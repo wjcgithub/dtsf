@@ -21,7 +21,7 @@ class Controller
 
     public function __construct()
     {
-        $context = ContextPool::getContext();
+        $context = ContextPool::get();
         $this->request = $context->getRequest();
     }
 }

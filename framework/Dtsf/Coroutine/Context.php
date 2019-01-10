@@ -11,6 +11,7 @@ namespace Dtsf\Coroutine;
 use EasySwoole\Http\Request as EsRequest;
 use EasySwoole\Http\Response as EsResponse;
 use Swoole\Http\Response;
+use Swoole\Http\Request;
 
 class Context
 {
@@ -29,10 +30,10 @@ class Context
      */
     private $map = [];
 
-    public function __construct(EsRequest $request, Response $response)
+    public function __construct(Request $request, Response $response)
     {
-        $this->request = $request;
-        $this->response = $response;
+        $this->request = new EsRequest($request);
+        $this->response = new EsResponse($response);
     }
 
     /**

@@ -27,7 +27,7 @@ class ContextPool
      * @return mixed|null
      * @desc 可以在任意协程获取到context
      */
-    public static function getContext()
+    public static function get()
     {
         $id = Coroutine::getPid();
         if (isset(self::$pool[$id])) {
@@ -40,11 +40,12 @@ class ContextPool
     /**
      * @desc 清除context
      */
-    public static function clear()
+    public static function release()
     {
         $id = Coroutine::getPid();
         if (isset(self::$pool[$id])) {
             unset(self::$pool[$id]);
+            Coroutine::clear($id);
         }
     }
 
@@ -52,9 +53,14 @@ class ContextPool
      * @param $context
      * @desc 设置context
      */
-    public static function set($context)
+    public static function put($context)
     {
         $id = Coroutine::getPid();
         self::$pool[$id] = $context;
+    }
+
+    public static function getLength()
+    {
+        return count(self::$pool);
     }
 }

@@ -15,7 +15,9 @@
         "php-amqplib/php-amqplib": "^2.8",
         "ext-swoole": ">=4.2.9",
         "ext-seaslog": ">=1.9.0",
-        "easyswoole/http": "^1.2"
+        "easyswoole/http": "^1.2",
+        "easyswoole/mysqli": "^1.1",
+        "hassankhan/config": "^2.0"
     },
     "autoload": {
         "classmap": [],

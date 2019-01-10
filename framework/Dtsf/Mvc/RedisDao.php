@@ -28,6 +28,8 @@ class RedisDao
 
     public static function getInstance($name = 'default')
     {
+        $coId = Coroutine::getId();
+//        echo 'redis dao id:'.$coId.PHP_EOL;
         if (!isset(self::$instance[$name])) {
             self::$instance[$name] = new static($name);
         }
@@ -39,15 +41,19 @@ class RedisDao
     public function __construct($name)
     {
         $coId = Coroutine::getId();
+//        echo 'redis dao id:'.$coId.PHP_EOL;
         if (empty($this->dbs[$coId])) {
             //不同协程不能复用mysql连接，所以通过协程id进行资源隔离
             //达到同一协程只用一个mysql连接，不同协程用不同的mysql连接
             $this->dbs[$coId] = RedisPool::getInstance($name)->get();
+//            echo 'redis dao id to dbs:'.$coId.PHP_EOL;
             defer(function () use ($name){
+//                echo 'redis dao end:'.$name;
                 //利用协程的defer特性，自动回收资源
                 $this->recycle($name);
             });
         }
+        print_r(json_encode($this->dbs));
         $this->redis = $this->dbs[$coId];
     }
 
@@ -66,7 +72,6 @@ class RedisDao
                 RedisPool::getInstance($name)->put($redis);
             }catch (\Exception $e) {
             }
-
         }
     }
 

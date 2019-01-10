@@ -16,7 +16,7 @@ class IndexController
     public function index()
     {
         //通过context拿到$request
-        $context = ContextPool::getContext();
+        $context = ContextPool::get();
         $request = $context->getRequest();
         return 'i am family by route'. json_encode($request->get);
     }
