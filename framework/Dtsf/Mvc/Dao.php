@@ -197,8 +197,8 @@ class Dao
 
         echo "查询开始前.......\r\n";
 //        \Swoole\Coroutine::sleep(2);
-//        $res = $this->getDb()->rawQuery($query);
-        $res = $this->getDb()->safeQuery($query);
+        $res = $this->getDb()->rawQuery($query);
+//        $res = $this->getDb()->safeQuery($query);
         echo "查询中.......\r\n";
         echo "查询完毕.......\r\n";
         return $res;

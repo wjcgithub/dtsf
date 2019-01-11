@@ -40,7 +40,7 @@ class Dtsf
     final public static function run()
     {
         try {
-            Swoole\Runtime::enableCoroutine();
+//            Swoole\Runtime::enableCoroutine();
             //启动前初始化
             self::_init();
             $http = new Swoole\Http\Server(Config::get('host'), Config::get('port'));
