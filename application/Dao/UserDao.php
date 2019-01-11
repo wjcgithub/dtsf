@@ -10,9 +10,9 @@ namespace App\Dao;
 
 
 use Dtsf\Core\Singleton;
-use Dtsf\Mvc\Dao;
+use Dtsf\Mvc\DbDao;
 
-class UserDao extends Dao
+class UserDao extends DbDao
 {
     use Singleton;
 

@@ -35,11 +35,23 @@ class Redis
         if ($res === false) {
             //连接失败，抛弃常
             throw new \RuntimeException('Failed to connect redis server:' . $redis->errMsg, $redis->errCode);
-        } else {
-            $this->redis = $redis;
         }
-
+        $this->redis = $redis;
         return $res;
+    }
+
+    /**
+     * 获取client
+     * @return redis
+     */
+    protected function getRedis()
+    {
+        return $this->redis;
+    }
+
+    protected function closeRedis()
+    {
+        $this->redis->close();
     }
 
     /**

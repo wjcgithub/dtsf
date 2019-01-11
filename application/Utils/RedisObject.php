@@ -7,25 +7,20 @@ namespace App\Utils;
  * Date: 18-12-29
  * Time: 下午6:04
  */
-use Dtsf\Core\Log;
+use Dtsf\Db\Redis;
 use EasySwoole\Component\Pool\PoolObjectInterface;
-use EasySwoole\Mysqli\Mysqli;
 
-class MysqlObject extends Mysqli implements PoolObjectInterface
+class RedisObject extends Redis implements PoolObjectInterface
 {
     function gc()
     {
-        // 重置为初始状态
-        $this->resetDbStatus();
         // 关闭数据库连接
-        $this->getMysqlClient()->close();
-        Log::info('资源回收->'.json_encode($this), [], 'dbpool');
+        $this->closeRedis();
     }
 
     function objectRestore()
     {
         // 重置为初始状态
-        $this->resetDbStatus();
     }
 
     /**
@@ -36,6 +31,6 @@ class MysqlObject extends Mysqli implements PoolObjectInterface
     function beforeUse(): bool
     {
         // 此处可以进行链接是否断线的判断 使用不同的数据库操作类时可以根据自己情况修改
-        return $this->getMysqlClient()->connected;
+        return $this->getRedis()->connected;
     }
 }

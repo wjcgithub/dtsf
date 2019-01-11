@@ -1,8 +1,7 @@
 <?php
 namespace App\Providers;
+
 use Dtsf\Core\Config;
-use Dtsf\Mvc\RedisDao;
-use App\Utils\MysqlPool;
 use EasySwoole\Component\Pool\PoolManager;
 
 /**
@@ -16,16 +15,13 @@ class DtsfInitProvider
     public static function poolInit()
     {
         $mysqlConfig = Config::get('mysql.default');
-        if (!empty($mysqlConfig)){
-            //初始化mysql链接池
+        if (!empty($mysqlConfig)) {
             PoolManager::getInstance()->register($mysqlConfig['class'], $mysqlConfig['pool_size']);
         }
 
-//        $redisConfig = Config::get('redis');
-//        if (!empty($redisConfig)){
-//            foreach ($redisConfig as $name=>$c) {
-//                RedisDao::getInstance($name);
-//            }
-//        }
+        $redisConfig = Config::get('redis.default');
+        if (!empty($redisConfig)) {
+            PoolManager::getInstance()->register($redisConfig['class'], $redisConfig['pool_size']);
+        }
     }
 }

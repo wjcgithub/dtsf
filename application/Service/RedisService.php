@@ -9,8 +9,8 @@
 namespace App\Service;
 
 
+use App\Dao\RedisDefaultDao;
 use Dtsf\Core\Singleton;
-use Dtsf\Mvc\RedisDao;
 
 class RedisService
 {
@@ -18,8 +18,11 @@ class RedisService
 
     public function get($key)
     {
-        $r1 = RedisDao::getInstance('db')->get($key);
-        $r2 = RedisDao::getInstance('default')->get($key);
+//        RedisDefaultDao::getInstance()->set('a',1111);
+        $r1 = RedisDefaultDao::getInstance()->get('a');
+        $r2 = 'test';
+//        $r1 = RedisDao::getInstance('db')->get($key);
+//        $r2 = RedisDao::getInstance('default')->get($key);
         return json_encode(compact('r1', 'r2'));
     }
 }
