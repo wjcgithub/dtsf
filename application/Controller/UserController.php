@@ -56,6 +56,7 @@ class UserController extends Controller
     public function list()
     {
         $result = UserService::getInstance()->getUserInfoList();
+        echo "=================goto================";
         return json_encode($result);
     }
 }

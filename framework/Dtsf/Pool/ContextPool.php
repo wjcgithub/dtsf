@@ -46,6 +46,7 @@ class ContextPool
         if (isset(self::$pool[$id])) {
             unset(self::$pool[$id]);
             Coroutine::clear($id);
+            echo "Request Coroutine".\Swoole\Coroutine::getuid()."-- defer event\r\n";
         }
     }
 

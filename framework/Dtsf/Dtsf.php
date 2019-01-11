@@ -40,6 +40,7 @@ class Dtsf
     final public static function run()
     {
         try {
+            Swoole\Runtime::enableCoroutine();
             //启动前初始化
             self::_init();
             $http = new Swoole\Http\Server(Config::get('host'), Config::get('port'));
@@ -89,8 +90,10 @@ class Dtsf
 
             //accept http request
             $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) {
-                //                $db = PoolManager::getInstance()->getPool(\App\Utils\MysqlPool::class)->getObj(1);
-                //                $aa = $db->where('id',1)->get('student');
+                if ('/favicon.ico' === $request->server['path_info']) {
+                    $response->end('');
+                    return;
+                }
                 //初始化根协程ID
                 Coroutine::setBaseId();
                 //初始化上下文
@@ -105,27 +108,28 @@ class Dtsf
                 try {
                     //自动路由
                     $result = Route::dispatch();
+                    echo "Request Coroutine".Swoole\Coroutine::getuid()."--to close\r\n";
                     $response->end($result);
                 } catch (\Exception $e) { //程序异常
-                    file_put_contents('/tmp/pool.txt', 'error--0', 'a+');
+                    file_put_contents('/tmp/pool.txt', 'error--0');
                     Log::exception($e);
                     $context->getResponse()->withStatus(500);
                 } catch (\Error $e) { //程序错误，如fatal error
-                    file_put_contents('/tmp/pool.txt', 'error--1', 'a+');
+                    file_put_contents('/tmp/pool.txt', 'error--1');
                     Log::exception($e);
                     $context->getResponse()->withStatus(500);
                 } catch (\Throwable $e) {  //兜底
-                    file_put_contents('/tmp/pool.txt', 'error--2', 'a+');
+                    file_put_contents('/tmp/pool.txt', 'error--2');
                     Log::exception($e);
                     $context->getResponse()->withStatus(500);
                 }
             });
             $http->start();
         } catch (\Exception $e) {
-            file_put_contents('/tmp/pool.txt', 'Exception -3', 'a+');
+            file_put_contents('/tmp/pool.txt', 'Exception -3');
             print_r($e);
         } catch (\Throwable $throwable) {
-            file_put_contents('/tmp/pool.txt', 'Throwable -4', 'a+');
+            file_put_contents('/tmp/pool.txt', 'Throwable -4');
             print_r($throwable);
         }
     }

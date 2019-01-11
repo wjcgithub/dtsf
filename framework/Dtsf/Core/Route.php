@@ -22,9 +22,6 @@ class Route
         $request = $context->getRequest();
         $path = $request->getUri()->getPath();
         //获取自己配置的路由规则
-        if ('/favicon.ico' == $path) {
-            return '';
-        }
         $r = Config::get('router');
         //没有路由配置或者配置不可执行, 则走默认路由
         if (empty($r) || !is_callable($r)) {

@@ -17,7 +17,8 @@
         "ext-seaslog": ">=1.9.0",
         "easyswoole/http": "^1.2",
         "easyswoole/mysqli": "^1.1",
-        "hassankhan/config": "^2.0"
+        "hassankhan/config": "^2.0",
+        "paragonie/easydb": "^2"
     },
     "autoload": {
         "classmap": [],

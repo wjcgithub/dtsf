@@ -12,15 +12,19 @@ namespace Dtsf\Mvc;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Coroutine\Coroutine;
-use Dtsf\Pool\MysqlPool;
 use EasySwoole\Component\Pool\PoolManager;
 
 class Dao
 {
     /**
+     * @var string mysql 链接
+     */
+    protected $connection = '';
+
+    /**
      * @var entity名
      */
-    private $entity;
+    protected $entity;
 
     /**
      * @var mysql连接数组
@@ -31,13 +35,13 @@ class Dao
     /**
      * @var Mysql
      */
-    private $db;
+    protected $db;
 
     //表名
-    private $table;
+    protected $table;
 
     //主键字段名
-    private $pkId;
+    protected $pkId;
     /**
      * @var 数据库配置名称, 用于处理多个数据库
      */
@@ -47,6 +51,10 @@ class Dao
     public function __construct($entity)
     {
         $this->entity = $entity;
+        $entityRef = new \ReflectionClass($this->entity);
+        $this->connection = $entityRef->getConstant('CONNECTION');
+        $this->table = $entityRef->getConstant('TABLE_NAME');
+        $this->pkId = $entityRef->getConstant('PK_ID');
     }
 
     /**
@@ -64,24 +72,23 @@ class Dao
      * @param string $dbTag
      * @return mixed
      */
-    public function getDb($dbTag = 'default')
+    public function getDb()
     {
         $coId = Coroutine::getId();
-        if (empty($this->dbs[$coId][$dbTag])) {
+        if (empty($this->dbs[$coId])) {
             //不同协程不能复用mysql链接, 所以通过协程id进行资源隔离
             //达到同一个协程只用一个mysql链接, 不同协程用不同的mysql链接
-            $this->dbs[$coId][$dbTag] = PoolManager::getInstance()->getPool(Config::get('mysql.'.$dbTag.'.class'))
-                ->getObj(Config::get('mysql.'.$dbTag.'.pool_get_timeout'));
+            $this->dbs[$coId] = PoolManager::getInstance()->getPool(Config::get('mysql.' . $this->connection . '.class'))
+                ->getObj(Config::get('mysql.' . $this->connection . '.pool_get_timeout'));
             defer(function () {
                 $this->recycle();
             });
-
         }
 
-        if (empty($this->dbs[$coId][$dbTag])) {
-            Log::emergency($dbTag.'数据库不够用了', 'dbpool');
+        if (empty($this->dbs[$coId])) {
+            Log::emergency($this->connection . '数据库不够用了', [], 'dbpool');
         }
-        return $this->dbs[$coId][$dbTag];
+        return $this->dbs[$coId];
 
     }
 
@@ -91,20 +98,16 @@ class Dao
      */
     public function recycle()
     {
-//        print_r("pool count: ".count($this->dbs). "\r\n");
-//        \Swoole\Coroutine::sleep(2);
+        print_r("current pool count: ".count($this->dbs). "\r\n");
         $coId = Coroutine::getId();
         if (!empty($this->dbs[$coId])) {
             $mysqlPool = $this->dbs[$coId];
             unset($this->dbs[$coId]);
-            if (!empty($mysqlPool)) {
-                foreach ($mysqlPool as $dbTag => $db) {
-                    $t = PoolManager::getInstance()->getPool(Config::get('mysql.'.$dbTag.'.class'));
-//                    print_r('before:'.$t->getLength()."\r\n");
-                    $t->recycleObj($db);
-//                    print_r('after:'.$t->getLength()."\r\n");
-                }
-            }
+            echo "Dao Coroutine".\Swoole\Coroutine::getuid()."-- defer event\r\n";
+            $t = PoolManager::getInstance()->getPool(Config::get('mysql.' . $this->connection . '.class'));
+            print_r('release before:'.$t->getLength()."\r\n");
+            $t->recycleObj($mysqlPool);
+            print_r('release after:'.$t->getLength()."\r\n");
         }
     }
 
@@ -192,9 +195,13 @@ class Dao
             $query .= " limit {$limit}";
         }
 
-        return $this->getDb()->where('id',1)->get('student');
-
-//        return $this->getDb()->query($query);
+        echo "查询开始前.......\r\n";
+//        \Swoole\Coroutine::sleep(2);
+//        $res = $this->getDb()->rawQuery($query);
+        $res = $this->getDb()->safeQuery($query);
+        echo "查询中.......\r\n";
+        echo "查询完毕.......\r\n";
+        return $res;
     }
 
     /**
@@ -204,7 +211,6 @@ class Dao
      */
     public function add(array $array)
     {
-
         $strFields = '`' . implode('`,`', array_keys($array)) . '`';
         $strValues = "'" . implode("','", array_values($array)) . "'";
         $query = "INSERT INTO {$this->getLibName()} ({$strFields}) VALUES ({$strValues})";

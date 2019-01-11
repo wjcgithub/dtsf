@@ -2,7 +2,7 @@
 return [
     'mysql' => [
         'default' => [
-            'class' => \App\Utils\MysqlPool::class,
+            'class' => \App\Utils\MysqlPdoPool::class,
             'pool_size' => 10,     //连接池大小
             'pool_get_timeout' => 10, //当在此时间内未获得到一个连接，会立即返回。（表示所以的连接都已在使用中）
             'master' => [
