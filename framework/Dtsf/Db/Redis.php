@@ -31,6 +31,10 @@ class Redis
         //创建主数据连接
         $redis = new SwRedis($this->config['options']);
         $redis->connect($this->config['host'], $this->config['port']);
+        if(!empty($this->config['auth'])){
+            $redis->auth($this->config['auth']);
+        }
+        $redis->select($this->config['db']);
         $res = $redis->connected;
         if ($res === false) {
             //连接失败，抛弃常

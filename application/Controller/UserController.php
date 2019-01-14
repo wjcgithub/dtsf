@@ -26,10 +26,11 @@ class UserController extends Controller
 
     public function add()
     {
+        $nameArr = ['zhangsan','lisi'];
         $array = [
-            'name' => $this->request->getQueryParam('name'),
-            'course' => $this->request->getQueryParam('course'),
-            'score' => $this->request->getQueryParam('score'),
+            'name' => $this->request->getQueryParam('name', shuffle($nameArr)),
+            'course' => $this->request->getQueryParam('course', str_shuffle('fjdlsakriepslfj')),
+            'score' => $this->request->getQueryParam('score', rand(1,100000)),
         ];
 
         return UserService::getInstance()->add($array);

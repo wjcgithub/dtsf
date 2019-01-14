@@ -133,12 +133,8 @@ class DbDao extends Dao
             $query .= " limit {$limit}";
         }
 
-        echo "查询开始前.......\r\n";
-//        \Swoole\Coroutine::sleep(2);
         $res = $this->getDb()->rawQuery($query);
 //        $res = $this->getDb()->safeQuery($query);
-        echo "查询中.......\r\n";
-        echo "查询完毕.......\r\n";
         return $res;
     }
 
@@ -155,7 +151,7 @@ class DbDao extends Dao
         if (!empty($onDuplicate)) {
             $query .= 'ON DUPLICATE KEY UPDATE ' . $onDuplicate;
         }
-        $result = $this->db->query($query);
+        $result = $this->getDb()->rawQuery($query);
         if (!empty($result['insert_id'])) {
             return $result['insert_id'];
         }

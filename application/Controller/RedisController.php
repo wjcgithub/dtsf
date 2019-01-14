@@ -16,9 +16,10 @@ class RedisController extends Controller
 {
     public function get()
     {
-        if (empty($this->request->getQueryParam('key'))) {
-            throw new \InvalidArgumentException('key 不能为空');
-        }
+//        if (empty($this->request->getQueryParam('key'))) {
+//            throw new \InvalidArgumentException('key 不能为空');
+//        }
+//        return RedisService::getInstance()->get($this->request->getQueryParam('key'));
         return RedisService::getInstance()->get($this->request->getQueryParam('key'));
     }
 }

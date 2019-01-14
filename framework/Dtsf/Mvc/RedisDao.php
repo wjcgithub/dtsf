@@ -17,7 +17,7 @@ class RedisDao extends Dao
      */
     protected $connection = '';
 
-    public function __construct($config)
+    public function __construct($config='default')
     {
         $this->connection = $config;
     }

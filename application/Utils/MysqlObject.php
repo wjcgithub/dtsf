@@ -19,7 +19,6 @@ class MysqlObject extends Mysqli implements PoolObjectInterface
         $this->resetDbStatus();
         // 关闭数据库连接
         $this->getMysqlClient()->close();
-        Log::info('资源回收->'.json_encode($this), [], 'dbpool');
     }
 
     function objectRestore()

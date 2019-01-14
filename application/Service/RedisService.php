@@ -16,9 +16,9 @@ class RedisService
 {
     use Singleton;
 
-    public function get($key)
+    public function get($key=null)
     {
-//        RedisDefaultDao::getInstance()->set('a',1111);
+        RedisDefaultDao::getInstance()->set('a',1111);
         $r1 = RedisDefaultDao::getInstance()->get('a');
         $r2 = 'test';
 //        $r1 = RedisDao::getInstance('db')->get($key);

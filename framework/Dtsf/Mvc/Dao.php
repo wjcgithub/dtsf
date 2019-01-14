@@ -17,6 +17,7 @@ use EasySwoole\Component\Pool\PoolManager;
 class Dao
 {
     protected $storage;
+    protected $waitPoolTime = 1;
 
     /**
      * 获取一个链接类型的db实例
@@ -32,14 +33,17 @@ class Dao
             //达到同一个协程只用一个mysql链接, 不同协程用不同的mysql链接
             $this->storage[$coId] = PoolManager::getInstance()->getPool(Config::get($this->daoType . '.' . $this->connection . '.class'))
                 ->getObj(Config::get($this->daoType . '.' . $this->connection . '.pool_get_timeout'));
-            defer(function () {
-                $this->recycle();
-            });
+            if (empty($this->storage[$coId])) {
+                Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请after{$this->waitPoolTime}s", [], 'dbpool');
+                \Swoole\Coroutine::sleep($this->waitPoolTime++);
+                $this->getDb();
+            }else{
+                defer(function () {
+                    $this->recycle();
+                });
+            }
         }
 
-        if (empty($this->storage[$coId])) {
-            Log::emergency($this->connection . '数据库不够用了', [], 'dbpool');
-        }
         return $this->storage[$coId];
     }
 
@@ -49,16 +53,17 @@ class Dao
      */
     public function recycle()
     {
-        print_r("current pool count: " . count($this->storage) . "\r\n");
+//        print_r("current pool count: " . count($this->storage) . "\r\n");
         $coId = Coroutine::getId();
         if (!empty($this->storage[$coId])) {
             $object = $this->storage[$coId];
             unset($this->storage[$coId]);
-            echo "Dao Coroutine" . \Swoole\Coroutine::getuid() . "-- defer event\r\n";
+            $this->waitPoolTime = 1;
+//            print_r("Dao Coroutine" . \Swoole\Coroutine::getuid() . "-- defer event\r\n");
             $pool = PoolManager::getInstance()->getPool(Config::get($this->daoType . '.' . $this->connection . '.class'));
-            print_r('release before:' . $pool->getLength() . "\r\n");
+//            print_r('release before:' . $pool->getLength() . "\r\n");
             $pool->recycleObj($object);
-            print_r('release after:' . $pool->getLength() . "\r\n");
+//            print_r('release after:' . $pool->getLength() . "\r\n");
         }
     }
 }

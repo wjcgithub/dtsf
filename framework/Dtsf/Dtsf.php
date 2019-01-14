@@ -28,7 +28,8 @@ class Dtsf
         self::$rootPath = dirname(dirname(__DIR__));
         self::$frameworkPath = self::$rootPath . DS . 'framework';
         self::$applicationPath = self::$rootPath . DS . 'application';
-        //init config
+
+        //加载框架的基础配置
         Config::load();
         $timeZone = Config::get('time_zone', 'Asia/Shanghai');
         \date_default_timezone_set($timeZone);
@@ -88,6 +89,10 @@ class Dtsf
                 }
             });
 
+            $http->on('workerStop', function (Swoole\Http\Server $serv, int $worker_id) {
+                Log::info("worker {worker_id} stoped.", ['{worker_id}' => $worker_id], 'stop');
+            });
+
             //accept http request
             $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) {
                 if ('/favicon.ico' === $request->server['path_info']) {
@@ -108,28 +113,22 @@ class Dtsf
                 try {
                     //自动路由
                     $result = Route::dispatch();
-                    echo "Request Coroutine".Swoole\Coroutine::getuid()."--to close\r\n";
                     $response->end($result);
                 } catch (\Exception $e) { //程序异常
-                    file_put_contents('/tmp/pool.txt', 'error--0');
                     Log::exception($e);
                     $context->getResponse()->withStatus(500);
                 } catch (\Error $e) { //程序错误，如fatal error
-                    file_put_contents('/tmp/pool.txt', 'error--1');
                     Log::exception($e);
                     $context->getResponse()->withStatus(500);
                 } catch (\Throwable $e) {  //兜底
-                    file_put_contents('/tmp/pool.txt', 'error--2');
                     Log::exception($e);
                     $context->getResponse()->withStatus(500);
                 }
             });
             $http->start();
         } catch (\Exception $e) {
-            file_put_contents('/tmp/pool.txt', 'Exception -3');
             print_r($e);
         } catch (\Throwable $throwable) {
-            file_put_contents('/tmp/pool.txt', 'Throwable -4');
             print_r($throwable);
         }
     }

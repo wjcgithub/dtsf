@@ -5,7 +5,8 @@ return [
             'class' => \App\Utils\RedisPool::class,
             'host' => 'develop',
             'port' => 6379,
-            'pool_size' => 10,
+            'db' => '5',
+            'pool_size' => 15,
             'pool_get_timeout' => 0.5,
             'options' => [
                 'connect_timeout' => 1,
@@ -17,7 +18,8 @@ return [
             'class' => \App\Utils\RedisPool::class,
             'host' => '127.0.0.1',
             'port' => 6379,
-            'pool_size' => 10,
+            'db' => '5',
+            'pool_size' => 15,
             'pool_get_timeout' => 0.5,
             'options' => [
                 'connect_timeout' => 1,

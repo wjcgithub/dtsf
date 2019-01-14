@@ -9,6 +9,8 @@
 namespace App\Controller;
 
 
+use App\Dao\RedisDefaultDao;
+use App\Dao\UserDao;
 use Dtsf\Pool\ContextPool;
 
 class IndexController
@@ -24,5 +26,18 @@ class IndexController
     public function test()
     {
         return 'i am test';
+    }
+
+    public function insertToDbAndCache()
+    {
+        $nameArr = ['zhangsan','lisi'];
+        $array = [
+            'name' => $nameArr[shuffle($nameArr)],
+            'course' => str_shuffle('fjdlsakriepslfj'),
+            'score' => rand(1,100),
+        ];
+
+        UserDao::getInstance()->add($array);
+//        RedisDefaultDao::getInstance()->lpush('co_list', time());
     }
 }
