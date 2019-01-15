@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<config>
+    <source_groups>
+        <source_group_d3e89450-b70c-4a03-9e83-09d4d837e854>
+            <name>Java Source Group</name>
+            <source_extensions>
+                <source_extension>.php</source_extension>
+            </source_extensions>
+            <source_paths>
+                <source_path>../ide-helper</source_path>
+            </source_paths>
+            <standard>8</standard>
+            <type>Java Source Group</type>
+            <use_jre_system_library>1</use_jre_system_library>
+        </source_group_d3e89450-b70c-4a03-9e83-09d4d837e854>
+    </source_groups>
+    <version>4</version>
+</config>

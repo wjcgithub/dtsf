@@ -25,7 +25,7 @@ class IndexController
 
     public function test()
     {
-        return 'i am test';
+        return 'Hello World';
     }
 
     public function insertToDbAndCache()
