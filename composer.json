@@ -20,7 +20,8 @@
         "hassankhan/config": "^2.0",
         "paragonie/easydb": "^2",
         "php-di/php-di": "^6.0",
-        "ocramius/proxy-manager": "^2.2"
+        "ocramius/proxy-manager": "^2.2",
+        "massivescale/celery-php": "dev-celery4"
     },
     "autoload": {
         "classmap": [],

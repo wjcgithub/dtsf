@@ -151,12 +151,8 @@ class DbDao extends Dao
         if (!empty($onDuplicate)) {
             $query .= 'ON DUPLICATE KEY UPDATE ' . $onDuplicate;
         }
-        $result = $this->getDb()->rawQuery($query);
-        if (!empty($result['insert_id'])) {
-            return $result['insert_id'];
-        }
 
-        return false;
+        return $this->getDb()->rawQuery($query);
     }
 
     /**

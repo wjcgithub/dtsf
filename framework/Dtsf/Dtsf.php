@@ -9,6 +9,7 @@ use Dtsf\Core\Route;
 use Dtsf\Coroutine\Context;
 use Dtsf\Coroutine\Coroutine;
 use Dtsf\Pool\ContextPool;
+use EasySwoole\Component\Pool\PoolManager;
 use Swoole;
 
 class Dtsf
@@ -90,7 +91,7 @@ class Dtsf
                     //日志初始化
                     Log::init();
                     //给用户自己的权利去初始化
-                    DtsfInitProvider::poolInit();
+                    DtsfInitProvider::workerStart();
                 } catch (\Exception $e) {
                     Log::error($e->getMessage());
                     $serv->shutdown();
@@ -102,6 +103,7 @@ class Dtsf
 
             $http->on('workerStop', function (Swoole\Http\Server $serv, int $worker_id) {
                 Log::info("worker {worker_id} stoped.", ['{worker_id}' => $worker_id], 'stop');
+                DtsfInitProvider::workerStop();
             });
 
             //accept http request
