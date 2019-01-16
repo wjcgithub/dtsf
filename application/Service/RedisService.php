@@ -10,12 +10,9 @@ namespace App\Service;
 
 
 use App\Dao\RedisDefaultDao;
-use Dtsf\Core\Singleton;
 
-class RedisService
+class RedisService extends AbstractService
 {
-    use Singleton;
-
     public function get($key=null)
     {
         RedisDefaultDao::getInstance()->set('a',1111);

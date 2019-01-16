@@ -31,6 +31,6 @@ class RabbitMqDao extends Dao
 
     public function insert($task, $payload, $route_key)
     {
-        return $this->getDb()->PostTask($task, $payload, true, $route_key);
+        return $this->getDb()->PostTask($task, $payload, false, $route_key);
     }
 }

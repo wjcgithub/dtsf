@@ -12,9 +12,10 @@ namespace App\Controller;
 use App\Dao\RabbitMqDao;
 use App\Dao\RedisDefaultDao;
 use App\Dao\UserDao;
+use Dtsf\Mvc\Controller;
 use Dtsf\Pool\ContextPool;
 
-class IndexController
+class IndexController extends Controller
 {
     public function index()
     {

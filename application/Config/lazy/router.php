@@ -7,6 +7,7 @@ return [
         $r->get('/redis/get', ['App\\Controller\\RedisController', 'get']);
         $r->get('/redis/set', ['App\\Controller\\RedisController', 'set']);
         $r->get('/insertdata', ['App\\Controller\\IndexController', 'insertToDbAndCache']);
+        $r->get('/msg', ['App\\Controller\\ApiController', 'PostTask']);
         $r->get('/test', function () {
             return "i am test";
         });

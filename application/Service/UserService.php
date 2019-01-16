@@ -10,12 +10,9 @@ namespace App\Service;
 
 
 use App\Dao\UserDao;
-use Dtsf\Core\Singleton;
 
-class UserService
+class UserService extends AbstractService
 {
-    use Singleton;
-
     public function getUserInfoByUid($id)
     {
         return UserDao::getInstance()->fetchById($id);

@@ -1,6 +1,8 @@
 <?php
 namespace Dtsf;
 
+use App\Dao\RabbitMqDao;
+use App\Dao\UserDao;
 use App\Providers\DtsfInitProvider;
 use DI\ContainerBuilder;
 use Dtsf\Core\Config;
@@ -54,6 +56,10 @@ class Dtsf
             $http->set(Config::get('swoole_setting'));
 
             $http->on('start', function (Swoole\Http\Server $serv) {
+                $serverName = Config::get('server_name');
+                if(PHP_OS != 'Darwin'){
+                    cli_set_process_title($serverName);
+                }
                 //日志初始化
                 Log::init();
                 file_put_contents(self::$rootPath . DS . 'bin' . DS . 'master.pid', $serv->master_pid);
@@ -66,10 +72,8 @@ class Dtsf
                 ], 'start');
 
                 swoole_timer_tick(2000, function() use ($serv){
-                    Log::info($serv->stats(), [], 'monitor');
+                    Log::info(['t'=>json_encode($serv->stats())], [], 'monitor');
                 });
-
-                self::$Di->set('serv',$serv);
             });
 
             $http->on('shutdown', function () {
@@ -90,8 +94,17 @@ class Dtsf
                     Config::loadLazy();
                     //日志初始化
                     Log::init();
+                    if(PHP_OS != 'Darwin'){
+                        $name = Config::get('server_name');
+                        if( ($worker_id < Config::get('swoole_setting.worker_num')) && $worker_id >= 0){
+                            $type = 'Worker';
+                        }else{
+                            $type = 'TaskWorker';
+                        }
+                        cli_set_process_title("{$name}.{$type}.{$worker_id}");
+                    }
                     //给用户自己的权利去初始化
-                    DtsfInitProvider::workerStart();
+                    DtsfInitProvider::workerStart($worker_id);
                 } catch (\Exception $e) {
                     Log::error($e->getMessage());
                     $serv->shutdown();
@@ -103,11 +116,22 @@ class Dtsf
 
             $http->on('workerStop', function (Swoole\Http\Server $serv, int $worker_id) {
                 Log::info("worker {worker_id} stoped.", ['{worker_id}' => $worker_id], 'stop');
-                DtsfInitProvider::workerStop();
+                DtsfInitProvider::workerStop($worker_id);
+            });
+
+            $http->on('task', function (Swoole\Http\Server $serv, Swoole\Server\Task $task) {
+                $data = $task->data;
+                if (!empty($data['celery'])) {
+                    $rest = RabbitMqDao::getInstance()->insert(
+                        'vm_test_2.task.handler',
+                        ['payload'=>'{"p":"{\"name\":\"\u5f20\u4e09\"}","c":"http:\/\/dtq.test.xin.com\/test\/celery-handler","t":"1","tid":10}'],
+                        'group62_vm_test_2');
+                    $task->finish($rest);
+                }
             });
 
             //accept http request
-            $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) {
+            $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) use ($http){
                 if ('/favicon.ico' === $request->server['path_info']) {
                     $response->end('');
                     return;
@@ -116,6 +140,7 @@ class Dtsf
                 Coroutine::setBaseId();
                 //初始化上下文
                 $context = new Context($request, $response);
+                $context->set('serv', $http);
                 //存放到容器pool
                 ContextPool::put($context);
                 //协程退出,自动清空

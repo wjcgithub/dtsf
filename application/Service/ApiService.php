@@ -8,17 +8,23 @@
 
 namespace App\Service;
 
+use App\Dao\RabbitMqDao;
+use Dtsf\Core\Log;
 
-use Dtsf\Core\Singleton;
-use Dtsf\Dtsf;
-
-class ApiService
+class ApiService extends AbstractService
 {
-    use Singleton;
-
     public function PostTask()
     {
-        $serv = Dtsf::$Di->get('serv');
-        print_r($serv);
+        $rest = RabbitMqDao::getInstance()->insert(
+            'vm_test_2.task.handler',
+            ['payload'=>'{"p":"{\"name\":\"\u5f20\u4e09\"}","c":"http:\/\/dtq.test.xin.com\/test\/celery-handler","t":"1","tid":10}'],
+            'group62_vm_test_2');
+//        static $i=0;
+//        $res = $this->serv->taskCo([['celery' => $i]], 1);
+//        if (empty($res[0])){
+//            Log::error("erro {$i}", [], 'rabbit_error');
+//        }
+//        $i++;
+        return $rest;
     }
 }

@@ -10,11 +10,12 @@ namespace App\Controller;
 
 
 use App\Service\ApiService;
+use Dtsf\Mvc\Controller;
 
-class ApiController
+class ApiController extends Controller
 {
     public function PostTask()
     {
-        ApiService::getInstance()->PostTask();
+        return ApiService::getInstance()->PostTask();
     }
 }
