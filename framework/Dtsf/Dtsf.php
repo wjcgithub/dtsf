@@ -2,6 +2,7 @@
 namespace Dtsf;
 
 use App\Providers\DtsfInitProvider;
+use DI\ContainerBuilder;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Core\Route;
@@ -15,6 +16,7 @@ class Dtsf
     public static $rootPath;
     public static $frameworkPath;
     public static $applicationPath;
+    public static $Di;
 
     /**
      * init framework
@@ -33,6 +35,9 @@ class Dtsf
         Config::load();
         $timeZone = Config::get('time_zone', 'Asia/Shanghai');
         \date_default_timezone_set($timeZone);
+
+        $builder = new ContainerBuilder();
+        self::$Di = $builder->build();
     }
 
     /**
@@ -62,6 +67,8 @@ class Dtsf
                 swoole_timer_tick(2000, function() use ($serv){
                     Log::info($serv->stats(), [], 'monitor');
                 });
+
+                self::$Di->set('serv',$serv);
             });
 
             $http->on('shutdown', function () {
