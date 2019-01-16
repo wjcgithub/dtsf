@@ -58,6 +58,10 @@ class Dtsf
                     '{masterId}' => $serv->master_pid,
                     '{managerId}' => $serv->manager_pid,
                 ], 'start');
+
+                swoole_timer_tick(2000, function() use ($serv){
+                    Log::info($serv->stats(), [], 'monitor');
+                });
             });
 
             $http->on('shutdown', function () {
