@@ -1,6 +1,5 @@
 /application/Log/*
 .idea/*
-
 composer.lock
 /bin/*.pid
 /bin/*.service
