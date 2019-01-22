@@ -3,14 +3,18 @@ return [
     'redis' => [
         'default' => [
             'class' => \App\Utils\RedisPool::class,
-            'host' => 'develop',
+            'host' => '127.0.0.1',
             'port' => 6379,
             'db' => '5',
             'pool_size' => 15,
-            'pool_get_timeout' => 0.5,
+            'interval_check_time' => 120*1000,
+            'max_idle_time' => 15,
+            'max_object_num' => 20,
+            'min_object_num' => 5,
+            'get_object_timeout' => 1.5,
             'options' => [
                 'connect_timeout' => 1,
-                'timeout' => 1,
+                'timeout' => 100,
                 'reconnect' => 5
             ]
         ],
@@ -20,10 +24,14 @@ return [
             'port' => 6379,
             'db' => '5',
             'pool_size' => 15,
-            'pool_get_timeout' => 1,
+            'interval_check_time' => 4*1000,
+            'max_idle_time' => 15,
+            'max_object_num' => 20,
+            'min_object_num' => 5,
+            'get_object_timeout' => 3,
             'options' => [
                 'connect_timeout' => 1,
-                'timeout' => 1,
+                'timeout' => 100,
                 'reconnect' => 5
             ]
         ],

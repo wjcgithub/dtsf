@@ -11,26 +11,24 @@ namespace App\Dao;
 
 use Dtsf\Core\Singleton;
 use Dtsf\Mvc\Dao;
-use Dtsf\Mvc\DbDao;
-use Dtsf\Mvc\RedisDao;
 
-class RabbitMqDao extends Dao
+class CeleryMqDao extends Dao
 {
     use Singleton;
 
-    protected $daoType = 'rabbitmq';
+    protected $daoType = 'celery';
     /**
      * @var string mysql 链接
      */
     protected $connection = '';
 
-    public function __construct($config='default')
+    public function __construct($config = 'default')
     {
         $this->connection = $config;
     }
 
-    public function insert($task, $payload, $route_key)
+    public function insert($msgid, $task, $payload, $route_key)
     {
-        return $this->getDb()->PostTask($task, $payload, false, $route_key);
+        return $this->getDb()->PostTask($msgid, $task, $payload, true, $route_key);
     }
 }

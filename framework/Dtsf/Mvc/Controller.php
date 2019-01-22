@@ -9,11 +9,15 @@
 namespace Dtsf\Mvc;
 
 
+use Dtsf\Core\Singleton;
 use Dtsf\Pool\ContextPool;
 
 class Controller
 {
+    use Singleton;
+
     protected $request;
+    protected $data;
 
     const CODE_SUCCESS = 200;
     const _CONTROLLER_KEY_ = '__CTR__';
@@ -23,5 +27,6 @@ class Controller
     {
         $context = ContextPool::get();
         $this->request = $context->getRequest();
+        $this->data = $this->request->getRequestParam();
     }
 }

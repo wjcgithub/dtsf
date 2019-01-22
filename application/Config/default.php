@@ -7,7 +7,7 @@ return [
     'time_zone' => 'Asia/Shanghai',     //时区
     'swoole_setting' => [               //swoole配置
         'worker_num' => 7,              //worker进程数量
-        'max_request' => 1000,
+        'max_request' => 10000,
 //        'task_worker_num' => 7,
 //        'task_max_request' => 1000,
 //        'task_enable_coroutine' => True,

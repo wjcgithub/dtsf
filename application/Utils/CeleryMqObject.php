@@ -11,12 +11,11 @@ namespace App\Utils;
 
 use EasySwoole\Component\Pool\PoolObjectInterface;
 
-class RabbitMqObject implements PoolObjectInterface
+class CeleryMqObject extends \Celery implements PoolObjectInterface
 {
     function gc()
     {
-        // 关闭数据库连接
-//        $this->closeRedis();
+        $this->disconnect();
     }
 
     function objectRestore()
@@ -33,5 +32,6 @@ class RabbitMqObject implements PoolObjectInterface
     {
         // 此处可以进行链接是否断线的判断 使用不同的数据库操作类时可以根据自己情况修改
 //        return $this->getRedis()->connected;
+        return true;
     }
 }

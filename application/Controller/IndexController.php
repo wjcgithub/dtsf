@@ -9,7 +9,7 @@
 namespace App\Controller;
 
 
-use App\Dao\RabbitMqDao;
+use App\Dao\CeleryMqDao;
 use App\Dao\RedisDefaultDao;
 use App\Dao\UserDao;
 use Dtsf\Mvc\Controller;
@@ -44,7 +44,7 @@ class IndexController extends Controller
         echo "db->end".PHP_EOL;
         var_dump(RedisDefaultDao::getInstance()->lpush('co_list', time()));
         echo "redis->end".PHP_EOL;
-        RabbitMqDao::getInstance()->insert(
+        CeleryMqDao::getInstance()->insert(
             'vm_test_2.task.handler',
             ['payload'=>'{"p":"{\"name\":\"\u5f20\u4e09\"}","c":"http:\/\/dtq.test.xin.com\/test\/celery-handler","t":"1","tid":10}'],
             'group62_vm_test_2');

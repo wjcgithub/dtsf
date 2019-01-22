@@ -15,7 +15,7 @@ class RedisDao extends Dao
     /**
      * @var string mysql 链接
      */
-    protected $connection = '';
+    protected $connection = 'default';
 
     public function __construct($config='default')
     {

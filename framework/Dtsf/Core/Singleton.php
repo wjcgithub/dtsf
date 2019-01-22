@@ -16,6 +16,10 @@ trait Singleton
     private static $instance;
     private static $coInstances;
 
+    private function __construct()
+    {
+    }
+
     /**
      * @param mixed ...$args
      * @return mixed

@@ -39,7 +39,7 @@ class DbDao extends Dao
     //主键字段名
     protected $pkId;
 
-    public function __construct($entity)
+    public function  __construct($entity)
     {
         $this->entity = $entity;
         $entityRef = new \ReflectionClass($this->entity);
@@ -66,13 +66,6 @@ class DbDao extends Dao
      */
     public function fetchById($id, $fields = '*')
     {
-//        $start = microtime(true);
-//        $this->db->query("select sleep(5)");
-//        echo "我是第一个sleep五秒之后\n";
-//        $ret = $this->db->query("select id from student limit 1");#2
-//        var_dump($ret);
-//        $use = microtime(true) - $start;
-//        echo "协程mysql输出用时：" . $use . PHP_EOL;
         return $this->fetchEntity("{$this->pkId} = {$id}", $fields);
     }
 
@@ -133,9 +126,7 @@ class DbDao extends Dao
             $query .= " limit {$limit}";
         }
 
-        $res = $this->getDb()->rawQuery($query);
-//        $res = $this->getDb()->safeQuery($query);
-        return $res;
+        return $this->getDb()->rawQuery($query);
     }
 
     /**

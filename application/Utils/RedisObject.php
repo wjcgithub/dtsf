@@ -7,7 +7,7 @@ namespace App\Utils;
  * Date: 18-12-29
  * Time: 下午6:04
  */
-use Dtsf\Db\Redis;
+use Dtsf\Db\Redis\Redis;
 use EasySwoole\Component\Pool\PoolObjectInterface;
 
 class RedisObject extends Redis implements PoolObjectInterface

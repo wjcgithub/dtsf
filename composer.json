@@ -21,7 +21,8 @@
         "paragonie/easydb": "^2",
         "php-di/php-di": "^6.0",
         "ocramius/proxy-manager": "^2.2",
-        "massivescale/celery-php": "dev-celery4"
+        "massivescale/celery-php": "dev-celery4",
+        "doctrine/annotations": "^1.6"
     },
     "autoload": {
         "classmap": [],

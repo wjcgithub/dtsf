@@ -6,7 +6,7 @@
  * Time: 下午4:22
  */
 
-namespace Dtsf\Db;
+namespace Dtsf\Db\Redis;
 
 use Dtsf\Core\Log;
 use Swoole\Coroutine\Redis as SwRedis;
@@ -38,7 +38,7 @@ class Redis
         $res = $redis->connected;
         if ($res === false) {
             //连接失败，抛弃常
-            throw new \RuntimeException('Failed to connect redis server:' . $redis->errMsg, $redis->errCode);
+            throw new DtRedisReException('Failed to connect redis server:' . $redis->errMsg, $redis->errCode);
         }
         $this->redis = $redis;
         return $res;
@@ -67,17 +67,7 @@ class Redis
      */
     public function reconnect()
     {
-        //创建主数据连接
-        $redis = new SwRedis($this->config['options']);
-        $redis->connect($this->config['host'], $this->config['port']);
-        $res = $redis->connected;
-        if ($res === false) {
-            //连接失败，抛弃常
-            throw new \RuntimeException($redis->errMsg, $redis->errCode);
-        } else {
-            $this->redis = $redis;
-        }
-        return $redis;
+        $this->connect($this->config['options']);
     }
 
     /**
@@ -89,20 +79,26 @@ class Redis
      */
     public function __call($name, $arguments)
     {
-        $result = call_user_func_array(array($this->redis, $name), $arguments);
-        if (false === $result) {
-            Log::warning('redis query false'. $name . '=====' . json_encode($arguments));
-            if (!$this->redis->connected) { //断线重连
-                $this->reconnect();
-                Log::info('redis reconnect' . $name . '=====' . json_encode($arguments));
-                $result = call_user_func_array(array($this->redis, $name), $arguments);
-            }
+        $result = null;
+        try{
+            $result = call_user_func_array(array($this->redis, $name), $arguments);
+            if (false === $result) {
+                Log::warning('redis query false'. $name . '=====' . json_encode($arguments));
+                if (!$this->redis->connected) { //断线重连
+                    $this->reconnect();
+                    Log::info('redis reconnect' . $name . '=====' . json_encode($arguments));
+                    $result = call_user_func_array(array($this->redis, $name), $arguments);
+                }
 
-            if (!empty($this->redis->errCode)) {  //有错误码，则抛出弃常
-                Log::error('redis reconnect error');
-                throw new \RuntimeException($this->redis->errMsg, $this->redis->errCode);
+                if (!empty($this->redis->errCode)) {  //有错误码，则抛出弃常
+                    Log::error('redis reconnect error');
+                    throw new DtRedisReException($this->redis->errMsg, $this->redis->errCode);
+                }
             }
+        }catch (\Exception $e) {
+            throw new DtRedisReException($e->getMessage(), $this->redis->errCode, $e);
         }
+
         return $result;
     }
 }

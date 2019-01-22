@@ -12,7 +12,7 @@ namespace App\Utils;
 use Dtsf\Core\Config;
 use EasySwoole\Component\Pool\AbstractPool;
 
-class RabbitmqPool extends AbstractPool
+class CeleryMqPool extends AbstractPool
 {
     /**
      * 请在此处返回一个数据库链接实例
@@ -20,8 +20,8 @@ class RabbitmqPool extends AbstractPool
      */
     protected function createObject()
     {
-        $config = Config::get('rabbitmq.default');
-        return new \Celery(
+        $config = Config::get('celery.default');
+        return new CeleryMqObject(
             $config['host'],
             $config['uname'],
             $config['pwd'],

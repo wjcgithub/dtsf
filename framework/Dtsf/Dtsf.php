@@ -2,16 +2,15 @@
 namespace Dtsf;
 
 use App\Dao\RabbitMqDao;
-use App\Dao\UserDao;
 use App\Providers\DtsfInitProvider;
 use DI\ContainerBuilder;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Core\Route;
+use Dtsf\Core\WorkerApp;
 use Dtsf\Coroutine\Context;
 use Dtsf\Coroutine\Coroutine;
 use Dtsf\Pool\ContextPool;
-use EasySwoole\Component\Pool\PoolManager;
 use Swoole;
 
 class Dtsf
@@ -38,9 +37,6 @@ class Dtsf
         Config::load();
         $timeZone = Config::get('time_zone', 'Asia/Shanghai');
         \date_default_timezone_set($timeZone);
-
-        $builder = new ContainerBuilder();
-        self::$Di = $builder->build();
     }
 
     /**
@@ -57,7 +53,7 @@ class Dtsf
 
             $http->on('start', function (Swoole\Http\Server $serv) {
                 $serverName = Config::get('server_name');
-                if(PHP_OS != 'Darwin'){
+                if (PHP_OS != 'Darwin') {
                     cli_set_process_title($serverName);
                 }
                 //日志初始化
@@ -71,8 +67,8 @@ class Dtsf
                     '{managerId}' => $serv->manager_pid,
                 ], 'start');
 
-                swoole_timer_tick(2000, function() use ($serv){
-                    Log::info(['t'=>json_encode($serv->stats())], [], 'monitor');
+                swoole_timer_tick(2000, function () use ($serv) {
+                    Log::info(['t' => json_encode($serv->stats())], [], 'monitor');
                 });
             });
 
@@ -94,11 +90,11 @@ class Dtsf
                     Config::loadLazy();
                     //日志初始化
                     Log::init();
-                    if(PHP_OS != 'Darwin'){
+                    if (PHP_OS != 'Darwin') {
                         $name = Config::get('server_name');
-                        if( ($worker_id < Config::get('swoole_setting.worker_num')) && $worker_id >= 0){
+                        if (($worker_id < Config::get('swoole_setting.worker_num')) && $worker_id >= 0) {
                             $type = 'Worker';
-                        }else{
+                        } else {
                             $type = 'TaskWorker';
                         }
                         cli_set_process_title("{$name}.{$type}.{$worker_id}");
@@ -119,19 +115,22 @@ class Dtsf
                 DtsfInitProvider::workerStop($worker_id);
             });
 
+            /**
+             * @todo test use
+             */
             $http->on('task', function (Swoole\Http\Server $serv, Swoole\Server\Task $task) {
                 $data = $task->data;
                 if (!empty($data['celery'])) {
                     $rest = RabbitMqDao::getInstance()->insert(
                         'vm_test_2.task.handler',
-                        ['payload'=>'{"p":"{\"name\":\"\u5f20\u4e09\"}","c":"http:\/\/dtq.test.xin.com\/test\/celery-handler","t":"1","tid":10}'],
+                        ['payload' => '{"p":"{\"name\":\"\u5f20\u4e09\"}","c":"http:\/\/dtq.test.xin.com\/test\/celery-handler","t":"1","tid":10}'],
                         'group62_vm_test_2');
                     $task->finish($rest);
                 }
             });
 
             //accept http request
-            $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) use ($http){
+            $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) use ($http) {
                 if ('/favicon.ico' === $request->server['path_info']) {
                     $response->end('');
                     return;
@@ -141,6 +140,10 @@ class Dtsf
                 //初始化上下文
                 $context = new Context($request, $response);
                 $context->set('serv', $http);
+                //workerApp初始化
+//                $containerBuilder = new ContainerBuilder();
+//                $containerBuilder->useAnnotations(true);
+//                $context->set('container', $containerBuilder->build());
                 //存放到容器pool
                 ContextPool::put($context);
                 //协程退出,自动清空
@@ -150,7 +153,7 @@ class Dtsf
                 });
                 try {
                     //自动路由
-                    $result = Route::dispatch();
+                    $result = Route::getInstance()->dispatch();
                     $response->end($result);
                 } catch (\Exception $e) { //程序异常
                     Log::exception($e);

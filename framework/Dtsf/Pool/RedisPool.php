@@ -27,7 +27,6 @@ class RedisPool
      */
     public static function getInstance($name = 'default')
     {
-//        print_r($name);
         if (empty($config = Config::get('redis'))) {
             throw new \RuntimeException("Redis config empty");
         }
@@ -80,7 +79,7 @@ class RedisPool
     public function get()
     {
         //@todo 如果为空要从新初始化连接池
-        $redis = $this->pool->pop($this->config['pool_get_timeout']);
+        $redis = $this->pool->pop($this->config['get_object_timeout']);
         if (false === $redis) {
             throw new \RuntimeException("Get redis timeout on coroutine, all mysql connection is used");
         }

@@ -32,7 +32,7 @@ class Dao
             //不同协程不能复用mysql链接, 所以通过协程id进行资源隔离
             //达到同一个协程只用一个mysql链接, 不同协程用不同的mysql链接
             $this->storage[$coId] = PoolManager::getInstance()->getPool(Config::get($this->daoType . '.' . $this->connection . '.class'))
-                ->getObj(Config::get($this->daoType . '.' . $this->connection . '.pool_get_timeout'));
+                ->getObj();
             if (empty($this->storage[$coId])) {
                 Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请after{$this->waitPoolTime}s", [], 'dbpool');
                 \Swoole\Coroutine::sleep($this->waitPoolTime++);
