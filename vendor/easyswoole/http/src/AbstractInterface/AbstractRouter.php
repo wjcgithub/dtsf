@@ -68,6 +68,7 @@ abstract class AbstractRouter
 
     /**
      * @param bool $globalMode
+     * @return void
      */
     public function setGlobalMode(bool $globalMode): void
     {

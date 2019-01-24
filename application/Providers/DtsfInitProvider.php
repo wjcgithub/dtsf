@@ -44,6 +44,8 @@ class DtsfInitProvider
                     ->setMaxObjectNum($rabbitmqConfig['max_object_num'])
                     ->setMinObjectNum($rabbitmqConfig['min_object_num'])
                     ->setGetObjectTimeout($rabbitmqConfig['get_object_timeout']);
+
+//                PoolManager::getInstance()->getPool($rabbitmqConfig['class'])->preLoad($rabbitmqConfig['min_object_num']);
             }
         }
     }

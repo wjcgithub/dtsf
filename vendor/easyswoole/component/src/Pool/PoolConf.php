@@ -9,6 +9,8 @@
 namespace EasySwoole\Component\Pool;
 
 
+use EasySwoole\Component\Pool\Exception\PoolObjectNumError;
+
 class PoolConf
 {
     protected $class;
@@ -16,7 +18,7 @@ class PoolConf
     protected $maxIdleTime = 15;
     protected $maxObjectNum = 20;
     protected $minObjectNum = 5;
-    protected $getObjectTimeout = 0.5;
+    protected $getObjectTimeout = 3.0;
 
     protected $extraConf = [];
 
@@ -83,12 +85,11 @@ class PoolConf
         return $this->maxObjectNum;
     }
 
-    /**
-     * @param int $maxObjectNum
-     * @return PoolConf
-     */
     public function setMaxObjectNum(int $maxObjectNum): PoolConf
     {
+        if($this->minObjectNum >= $maxObjectNum){
+            throw new PoolObjectNumError('min num is bigger than max');
+        }
         $this->maxObjectNum = $maxObjectNum;
         return $this;
     }
@@ -137,12 +138,11 @@ class PoolConf
         return $this->minObjectNum;
     }
 
-    /**
-     * @param int $minObjectNum
-     * @return PoolConf
-     */
     public function setMinObjectNum(int $minObjectNum): PoolConf
     {
+        if($minObjectNum >= $this->maxObjectNum){
+            throw new PoolObjectNumError('min num is bigger than max');
+        }
         $this->minObjectNum = $minObjectNum;
         return $this;
     }

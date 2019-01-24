@@ -9,8 +9,8 @@ return [
             'pool_size' => 15,
             'interval_check_time' => 120*1000,
             'max_idle_time' => 15,
-            'max_object_num' => 20,
-            'min_object_num' => 5,
+            'max_object_num' => 15,
+            'min_object_num' => 3,
             'get_object_timeout' => 1.5,
             'options' => [
                 'connect_timeout' => 1,

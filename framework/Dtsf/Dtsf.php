@@ -3,14 +3,16 @@ namespace Dtsf;
 
 use App\Dao\RabbitMqDao;
 use App\Providers\DtsfInitProvider;
-use DI\ContainerBuilder;
+use App\Utils\CeleryMqPool;
+use App\Utils\MysqlPool;
+use App\Utils\RedisPool;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Core\Route;
-use Dtsf\Core\WorkerApp;
 use Dtsf\Coroutine\Context;
 use Dtsf\Coroutine\Coroutine;
 use Dtsf\Pool\ContextPool;
+use EasySwoole\Component\Pool\PoolManager;
 use Swoole;
 
 class Dtsf
@@ -45,7 +47,7 @@ class Dtsf
     final public static function run()
     {
         try {
-//            Swoole\Runtime::enableCoroutine();
+            Swoole\Runtime::enableCoroutine();
             //启动前初始化
             self::_init();
             $http = new Swoole\Http\Server(Config::get('host'), Config::get('port'));
@@ -66,21 +68,33 @@ class Dtsf
                     '{masterId}' => $serv->master_pid,
                     '{managerId}' => $serv->manager_pid,
                 ], 'start');
+            });
 
-                swoole_timer_tick(2000, function () use ($serv) {
-                    Log::info(['t' => json_encode($serv->stats())], [], 'monitor');
-                });
+            $http->on('managerStart', function (Swoole\Http\Server $serv) {
+                $serverName = Config::get('server_name');
+                if (PHP_OS != 'Darwin') {
+                    cli_set_process_title("{$serverName}.manager");
+                }
             });
 
             $http->on('shutdown', function () {
                 //服务关闭，删除进程id
-                unlink(self::$rootPath . 'DS' . 'bin' . DS . 'master.pid');
-                unlink(self::$rootPath . 'DS' . 'bin' . DS . 'manager.pid');
+                unlink(self::$rootPath . DS . 'bin' . DS . 'master.pid');
+                unlink(self::$rootPath . DS . 'bin' . DS . 'manager.pid');
                 Log::info("http server shutdown", [], 'shutdown');
             });
 
             $http->on('workerStart', function (Swoole\Http\Server $serv, int $worker_id) {
                 Log::info("worker {worker_id} started.", ['{worker_id}' => $worker_id], 'start');
+                swoole_timer_tick(1000, function () use ($serv) {
+                    Log::info(['t' => json_encode($serv->stats())], [], 'monitor');
+
+                    Log::info([
+                        'CeleryMqPool'=>"---CeleryMqPool----".json_encode(PoolManager::getInstance()->getPool(CeleryMqPool::class)->status()),
+                        'RedisPool'=>"---RedisPool----".json_encode(PoolManager::getInstance()->getPool(RedisPool::class)->status()),
+                        'MysqlPool'=>"---MysqlPool----".json_encode(PoolManager::getInstance()->getPool(MysqlPool::class)->status())],
+                        [], 'pool_num');
+                });
                 if (function_exists('opcache_reset')) {
                     //清除opcache缓存, swoole模式下建议关闭opcache
                     \opcache_reset();
@@ -118,18 +132,18 @@ class Dtsf
             /**
              * @todo test use
              */
-            $http->on('task', function (Swoole\Http\Server $serv, Swoole\Server\Task $task) {
-                $data = $task->data;
-                if (!empty($data['celery'])) {
-                    $rest = RabbitMqDao::getInstance()->insert(
-                        'vm_test_2.task.handler',
-                        ['payload' => '{"p":"{\"name\":\"\u5f20\u4e09\"}","c":"http:\/\/dtq.test.xin.com\/test\/celery-handler","t":"1","tid":10}'],
-                        'group62_vm_test_2');
-                    $task->finish($rest);
-                }
-            });
+//            $http->on('task', function (Swoole\Http\Server $serv, Swoole\Server\Task $task) {
+//                $data = $task->data;
+//                Swoole\Coroutine::sleep(0.3);
+//                $task->finish($data);
+//            });
+//
+//            $http->on('finish', function ($response) {
+//
+//            });
 
-            //accept http request
+
+                //accept http request
             $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) use ($http) {
                 if ('/favicon.ico' === $request->server['path_info']) {
                     $response->end('');

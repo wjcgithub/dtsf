@@ -17,6 +17,8 @@ class RedisDefaultDao extends RedisDao
 {
     use Singleton;
 
+    public $val = 1;
+
     public function __construct()
     {
         parent::__construct('default');

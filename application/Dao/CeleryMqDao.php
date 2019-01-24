@@ -11,6 +11,7 @@ namespace App\Dao;
 
 use Dtsf\Core\Singleton;
 use Dtsf\Mvc\Dao;
+use Swoole\Coroutine;
 
 class CeleryMqDao extends Dao
 {

@@ -104,7 +104,7 @@ class Coroutine
      * @return null
      * @desc 执行回调函数
      */
-    public static function call($cb, $args)
+    public static function call($cb, $args=[])
     {
         if (empty($cb)) {
             return null;

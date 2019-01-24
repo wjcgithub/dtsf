@@ -6,8 +6,8 @@ return [
             'pool_size' => 60,     //连接池大小
             'interval_check_time' => 120*1000,
             'max_idle_time' => 15,
-            'max_object_num' => 20,
-            'min_object_num' => 5,
+            'max_object_num' => 19,
+            'min_object_num' => 4,
             'get_object_timeout' => 3, //当在此时间内未获得到一个连接，会立即返回。（表示所以的连接都已在使用中）
             'master' => [
                 'host' => '127.0.0.1',   //数据库ip

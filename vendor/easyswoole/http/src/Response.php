@@ -101,7 +101,9 @@ class Response extends MessageResponse
      */
     public function setCookie($name, $value = null, $expire = null, $path = '/', $domain = '', $secure = false, $httponly = false){
         if(!$this->isEndResponse()){
-            $this->withAddedCookie(func_get_args());
+            $this->withAddedCookie([
+                $name,$value,$expire,$path,$domain,$secure,$httponly
+            ]);
             return true;
         }else{
             return false;

@@ -12,6 +12,7 @@ namespace App\Controller;
 use App\Controller\Validates\ApiValidate;
 use App\Service\ApiService;
 use Dtsf\Mvc\Controller;
+use Swoole\Coroutine;
 
 class ApiController extends Controller
 {
@@ -24,15 +25,16 @@ class ApiController extends Controller
      */
     public function PostTask()
     {
-        if(!ApiValidate::getRequestInstance()->PostTaskValidate($this->data)){
-            return ApiValidate::getRequestInstance()->getError()->__toString();
+
+        if(!ApiValidate::getInstance()->PostTaskValidate($this->data)){
+            return ApiValidate::getInstance()->getError()->__toString();
         }
-        return ApiService::getRequestInstance()->PostTask('',$this->data['messageno'],$this->data['messagebody']);
+        return ApiService::getInstance()->PostTask('',$this->data['messageno'],$this->data['messagebody']);
     }
 
     public function test()
     {
-        return ApiService::getRequestInstance()->PostTask(2);
+        return ApiService::getInstance()->PostTask(2);
 
         $this->a = 100;
         echo "start" . $this->a;

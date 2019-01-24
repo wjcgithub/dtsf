@@ -8,6 +8,7 @@ return [
         $r->get('/redis/set', ['App\\Controller\\RedisController', 'set']);
         $r->get('/insertdata', ['App\\Controller\\IndexController', 'insertToDbAndCache']);
         $r->addRoute(['GET', 'POST'], '/msg', ['App\\Controller\\ApiController', 'PostTask']);
+        $r->addRoute(['GET', 'POST'], '/redis/test', ['App\\Controller\\IndexController', 'insertToRedis']);
         $r->get('/msg2', ['App\\Controller\\ApiController', 'test']);
         $r->get('/test', function () {
             return "i am test";

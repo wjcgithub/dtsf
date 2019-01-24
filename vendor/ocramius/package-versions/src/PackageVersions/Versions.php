@@ -14,9 +14,9 @@ final class Versions
     const VERSIONS = array (
   'doctrine/annotations' => 'v1.6.0@c7f2050c68a9ab0bdb0f98567ec08d80ea7d24d5',
   'doctrine/lexer' => 'v1.0.1@83893c552fd2045dd78aef794c31e694c37c0b8c',
-  'easyswoole/component' => '1.4.7@e7d53bebd30d34655dfe2c3d1e479650602f511c',
-  'easyswoole/http' => '1.2.6@76237d21670418de7e8822bf103c20f830d11b40',
-  'easyswoole/mysqli' => '1.1.10@c4b2785b9c6f721f09ec1488cffbf2c6c0546bbf',
+  'easyswoole/component' => '1.4.13@475d7d3e47493d1b5072572e8775ad8d24b54870',
+  'easyswoole/http' => '1.2.10@0e6f8f8fa0d947c8548144363478801d3a501178',
+  'easyswoole/mysqli' => '1.1.11@58f684ab67aa3baf428a509d5b09db5f6e5b7ad4',
   'easyswoole/spl' => '1.1.6@b0a9a8ec4c7de106382af4d1e155e66b305beece',
   'easyswoole/swoole-ide-helper' => '1.2.1@a6c7e013934b0663e1dac41cdc5dc5c85534c331',
   'easyswoole/utility' => '1.0.6@7b2269bf5b43d40182b5fea09324b5ea0871ef40',
@@ -39,7 +39,7 @@ final class Versions
   'symfony/polyfill-util' => 'v1.10.0@3b58903eae668d348a7126f999b0da0f2f93611c',
   'zendframework/zend-code' => '3.3.1@c21db169075c6ec4b342149f446e7b7b724f95eb',
   'zendframework/zend-eventmanager' => '3.2.1@a5e2583a211f73604691586b8406ff7296a946dd',
-  'evolution/swoole' => 'dev-master@fbc3fbd37d415b3d5c5d821527d67ad5d8dc7730',
+  'evolution/swoole' => 'dev-master@dc2542f71358d7342e1e9366ea1b2a7f0cffcdf7',
 );
 
     private function __construct()

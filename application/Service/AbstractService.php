@@ -22,6 +22,6 @@ abstract class AbstractService
     function __construct()
     {
         $this->context = ContextPool::get();
-        $this->serv = $this->context->get('serv');
+//        $this->serv = $this->context->get('serv');
     }
 }

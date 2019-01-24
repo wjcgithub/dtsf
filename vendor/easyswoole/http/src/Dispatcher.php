@@ -11,7 +11,8 @@ namespace EasySwoole\Http;
 
 use EasySwoole\Http\AbstractInterface\AbstractRouter;
 use EasySwoole\Http\AbstractInterface\Controller;
-use EasySwoole\Http\Exceptions\ControllerPoolEmpty;
+use EasySwoole\Http\Exception\ControllerPoolEmpty;
+use EasySwoole\Http\Exception\RouterError;
 use EasySwoole\Http\Message\Status;
 use Swoole\Coroutine as Co;
 use FastRoute\Dispatcher\GroupCountBased;
@@ -25,7 +26,7 @@ class Dispatcher
     private $maxPoolNum;
     private $controllerPoolCreateNum = [];
     private $httpExceptionHandler = null;
-    private $controllerPoolWaitTime = 5;
+    private $controllerPoolWaitTime = 5.0;
 
     /*
      * 默认每个进程15个控制器，若每个控制器一个持久连接，那么8 worker  就是120连接了
@@ -35,26 +36,12 @@ class Dispatcher
         $this->controllerNameSpacePrefix = trim($controllerNameSpace,'\\');
         $this->maxPoolNum = $maxPoolNum;
         $this->maxDepth = $maxDepth;
-        $class = $this->controllerNameSpacePrefix.'\\Router';
-        try{
-            if(class_exists($class)){
-                $ref = new \ReflectionClass($class);
-                if($ref->isSubclassOf(AbstractRouter::class)){
-                    $this->routerRegister =  $ref->newInstance();
-                    $this->router = new GroupCountBased($this->routerRegister->getRouteCollector()->getData());
-                }else{
-                    throw new \Exception("class : {$class} not AbstractRouter class");
-                }
-            }
-        }catch (\Throwable $throwable){
-            throw new \Exception($throwable->getMessage());
-        }
     }
 
     /**
-     * @param int $controllerPoolWaitTime
+     * @param float $controllerPoolWaitTime
      */
-    public function setControllerPoolWaitTime(int $controllerPoolWaitTime): void
+    public function setControllerPoolWaitTime(float $controllerPoolWaitTime): void
     {
         $this->controllerPoolWaitTime = $controllerPoolWaitTime;
     }
@@ -67,6 +54,29 @@ class Dispatcher
 
     public function dispatch(Request $request,Response $response):void
     {
+        /*
+         * 进行一次初始化判定
+         */
+        if($this->router === null){
+            $class = $this->controllerNameSpacePrefix.'\\Router';
+            try{
+                if(class_exists($class)){
+                    $ref = new \ReflectionClass($class);
+                    if($ref->isSubclassOf(AbstractRouter::class)){
+                        $this->routerRegister =  $ref->newInstance();
+                        $this->router = new GroupCountBased($this->routerRegister->getRouteCollector()->getData());
+                    }else{
+                        $this->router = false;
+                        throw new RouterError("class : {$class} not AbstractRouter class");
+                    }
+                }else{
+                    $this->router = false;
+                }
+            }catch (\Throwable $throwable){
+                $this->router = false;
+                throw new RouterError($throwable->getMessage());
+            }
+        }
         $path = UrlParser::pathInfo($request->getUri()->getPath());
         if($this->router instanceof GroupCountBased){
             $handler = null;
@@ -82,28 +92,11 @@ class Dispatcher
                         break;
                     }
                     case \FastRoute\Dispatcher::FOUND:{
-                        $func = $routeInfo[1];
+                        $handler = $routeInfo[1];
+                        //合并解析出来的数据
                         $vars = $routeInfo[2];
-                        if(is_callable($func)){
-                            try{
-                                call_user_func_array($func,array_merge([$request,$response],array_values($vars)));
-                                if ($response->isEndResponse()) {
-                                    return;
-                                }
-                            }catch (\Throwable $throwable){
-                                $this->hookThrowable($throwable,$request,$response);
-                                //出现异常的时候，不在往下dispatch
-                                return;
-                            }
-                        }else if(is_string($func)){
-                            $path = $func;
-                            $data = $request->getQueryParams();
-                            $request->withQueryParams($vars+$data);
-                            $pathInfo = UrlParser::pathInfo($func);
-                            $request->getUri()->withPath($pathInfo);
-                        }
-                        //命中路由的时候，直接跳转到分发逻辑
-                        goto dispatch;
+                        $data = $request->getQueryParams();
+                        $request->withQueryParams($vars+$data);
                         break;
                     }
                     default:{
@@ -115,12 +108,23 @@ class Dispatcher
             //如果handler不为null，那么说明，非为 \FastRoute\Dispatcher::FOUND ，因此执行
             if(is_callable($handler)){
                 try{
-                    call_user_func($handler,$request,$response);
+                    //若直接返回一个url path
+                    $ret = call_user_func($handler,$request,$response);
+                    if(is_string($ret)){
+                        $path = UrlParser::pathInfo($ret);
+                    }else{
+                        //可能在回调中重写了URL PATH
+                        $path = UrlParser::pathInfo($request->getUri()->getPath());
+                    }
+                    $request->getUri()->withPath($path);
                 }catch (\Throwable $throwable){
                     $this->hookThrowable($throwable,$request,$response);
                     //出现异常的时候，不在往下dispatch
                     return;
                 }
+            }else if(is_string($handler)){
+                $path = UrlParser::pathInfo($handler);
+                $request->getUri()->withPath($path);
             }
             /*
                 * 全局模式的时候，都拦截。非全局模式，否则继续往下
@@ -129,15 +133,12 @@ class Dispatcher
                 return;
             }
         }
-
         //如果路由中结束了响应，则不再往下
         if($response->isEndResponse()){
             return;
         }
 
-        dispatch :{
-            $this->controllerHandler($request,$response,$path);
-        };
+        $this->controllerHandler($request,$response,$path);
     }
 
     private function controllerHandler(Request $request,Response $response,string $path)
@@ -181,7 +182,12 @@ class Dispatcher
             }
             if($c instanceof Controller){
                 try{
-                    $c->__hook($actionName,$request,$response);
+                    $path = $c->__hook($actionName,$request,$response);
+                    if($path){
+                        $path = UrlParser::pathInfo($path);
+                        $request->getUri()->withPath($path);
+                        $this->dispatch($request,$response);
+                    }
                 }catch (\Throwable $throwable){
                     $this->hookThrowable($throwable,$request,$response);
                 }finally {

@@ -127,29 +127,29 @@
     },
     {
         "name": "easyswoole/component",
-        "version": "1.4.7",
-        "version_normalized": "1.4.7.0",
+        "version": "1.4.13",
+        "version_normalized": "1.4.13.0",
         "source": {
             "type": "git",
             "url": "https://github.com/easy-swoole/component.git",
-            "reference": "e7d53bebd30d34655dfe2c3d1e479650602f511c"
+            "reference": "475d7d3e47493d1b5072572e8775ad8d24b54870"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/component/zipball/e7d53bebd30d34655dfe2c3d1e479650602f511c",
-            "reference": "e7d53bebd30d34655dfe2c3d1e479650602f511c",
+            "url": "https://api.github.com/repos/easy-swoole/component/zipball/475d7d3e47493d1b5072572e8775ad8d24b54870",
+            "reference": "475d7d3e47493d1b5072572e8775ad8d24b54870",
             "shasum": ""
         },
         "require": {
             "easyswoole/swoole-ide-helper": "^1.2",
             "easyswoole/utility": "^1.0",
-            "ext-swoole": "^4.0",
+            "ext-swoole": "^4.2.9",
             "php": ">=7.1.0"
         },
         "require-dev": {
             "easyswoole/phpunit": "^1.0"
         },
-        "time": "2019-01-10T07:42:30+00:00",
+        "time": "2019-01-22T14:05:26+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -179,17 +179,17 @@
     },
     {
         "name": "easyswoole/http",
-        "version": "1.2.6",
-        "version_normalized": "1.2.6.0",
+        "version": "1.2.10",
+        "version_normalized": "1.2.10.0",
         "source": {
             "type": "git",
             "url": "https://github.com/easy-swoole/http.git",
-            "reference": "76237d21670418de7e8822bf103c20f830d11b40"
+            "reference": "0e6f8f8fa0d947c8548144363478801d3a501178"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/http/zipball/76237d21670418de7e8822bf103c20f830d11b40",
-            "reference": "76237d21670418de7e8822bf103c20f830d11b40",
+            "url": "https://api.github.com/repos/easy-swoole/http/zipball/0e6f8f8fa0d947c8548144363478801d3a501178",
+            "reference": "0e6f8f8fa0d947c8548144363478801d3a501178",
             "shasum": ""
         },
         "require": {
@@ -203,7 +203,7 @@
         "require-dev": {
             "easyswoole/swoole-ide-helper": "^1.0"
         },
-        "time": "2019-01-10T14:19:14+00:00",
+        "time": "2019-01-22T15:13:34+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -232,17 +232,17 @@
     },
     {
         "name": "easyswoole/mysqli",
-        "version": "1.1.10",
-        "version_normalized": "1.1.10.0",
+        "version": "1.1.11",
+        "version_normalized": "1.1.11.0",
         "source": {
             "type": "git",
             "url": "https://github.com/easy-swoole/mysqli.git",
-            "reference": "c4b2785b9c6f721f09ec1488cffbf2c6c0546bbf"
+            "reference": "58f684ab67aa3baf428a509d5b09db5f6e5b7ad4"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/mysqli/zipball/c4b2785b9c6f721f09ec1488cffbf2c6c0546bbf",
-            "reference": "c4b2785b9c6f721f09ec1488cffbf2c6c0546bbf",
+            "url": "https://api.github.com/repos/easy-swoole/mysqli/zipball/58f684ab67aa3baf428a509d5b09db5f6e5b7ad4",
+            "reference": "58f684ab67aa3baf428a509d5b09db5f6e5b7ad4",
             "shasum": ""
         },
         "require": {
@@ -251,7 +251,7 @@
         "require-dev": {
             "easyswoole/swoole-ide-helper": "dev-master"
         },
-        "time": "2018-12-21T14:05:23+00:00",
+        "time": "2019-01-22T13:57:47+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

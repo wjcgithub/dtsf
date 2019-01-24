@@ -53,15 +53,18 @@ class ApiService extends AbstractService
         if(empty($msgid)) {
             $msgid = uniqid($taskInfo['taskName'], TRUE);
         }
-
-        $cresult = CeleryMqDao::getInstance()->insert(
-            $msgid,
-            $taskInfo['taskName'],
-            ['payload' => json_encode($paramsArr)],
-            $taskInfo['queueName']
-        );
-        $qResult->setCode(Result::CODE_SUCCESS)->setData($cresult->getId())->setMsg('success');
+//        \Dtsf\Coroutine\Coroutine::create(function () use($msgid, $taskInfo,$paramsArr){
+            $cresult = CeleryMqDao::getInstance()->insert(
+                $msgid,
+                $taskInfo['taskName'],
+                ['payload' => json_encode($paramsArr)],
+                $taskInfo['queueName']
+            );
+//        });
+        $qResult = Result::getInstance();
+        $qResult->setCode(Result::CODE_SUCCESS)->setData(['1'])->setMsg('success');
         return $qResult->toJson();
+        //return $this->serv->task(['celery'=>['a'=>1]]);
     }
 
     /**
@@ -70,11 +73,11 @@ class ApiService extends AbstractService
      */
     private function getTaskInfoByTid($tid)
     {
-        $result = Result::getRequestInstance();
+        $result = Result::getInstance();
         $redis = null;
         try {
             $taskInfoStr = '';
-            $redis = RedisDefaultDao::getRequestInstance();
+            $redis = RedisDefaultDao::getInstance();
             //这里单独链接，是为了设置超时时间，而不影响其他使用者
             $mtid = $this->makeTid($tid);
             //缓存不存在，回写缓存
@@ -115,7 +118,7 @@ class ApiService extends AbstractService
         $taskInfo = $this->fetchTaskInfo($tid);
         $where = "id = '{$taskInfo->queueid}'";
         $fields = 'name';
-        $queueInfo = QueueDao::getRequestInstance()->fetchEntity($where, $fields);
+        $queueInfo = QueueDao::getInstance()->fetchEntity($where, $fields);
         if (!empty($taskInfo)) {
             $cacheValueArr['queueName'] = 'group' . $taskInfo->groupid . '_' . $queueInfo->name;
             $cacheValueArr['taskName'] = $queueInfo->name . '.task.handler';
@@ -139,7 +142,7 @@ class ApiService extends AbstractService
     {
         $where = "tid = '{$tid}' and status = " . self::TASK_STATUS_ENABLE;
         $fields = '*';
-        return TasksDao::getRequestInstance()->fetchEntity($where, $fields);
+        return TasksDao::getInstance()->fetchEntity($where, $fields);
     }
 
     /**
