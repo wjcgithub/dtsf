@@ -488,7 +488,7 @@ class StreamIO extends AbstractIO
         // get status of socket to determine whether or not it has timed out
         $info = stream_get_meta_data($this->sock);
 
-        return empty($info['timed_out']) ? false: $info['timed_out'];
+        return $info['timed_out'] ?? 0;
     }
 
     /**

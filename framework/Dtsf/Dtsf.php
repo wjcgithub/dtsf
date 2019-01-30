@@ -88,13 +88,26 @@ class Dtsf
                 Log::info("worker {worker_id} started.", ['{worker_id}' => $worker_id], 'start');
                 swoole_timer_tick(1000, function () use ($serv) {
                     Log::info(['t' => json_encode($serv->stats())], [], 'monitor');
-
                     Log::info([
                         'CeleryMqPool'=>"---CeleryMqPool----".json_encode(PoolManager::getInstance()->getPool(CeleryMqPool::class)->status()),
                         'RedisPool'=>"---RedisPool----".json_encode(PoolManager::getInstance()->getPool(RedisPool::class)->status()),
                         'MysqlPool'=>"---MysqlPool----".json_encode(PoolManager::getInstance()->getPool(MysqlPool::class)->status())],
                         [], 'pool_num');
                 });
+//                swoole_timer_tick(2000, function () {
+//                    $coros = Swoole\Coroutine::listCoroutines();
+//                    foreach($coros as $cid)
+//                    {
+////                        Log::info([
+////                            'CeleryMqPool'=>"---CeleryMqPool----".json_encode(PoolManager::getInstance()->getPool(CeleryMqPool::class)->status()),
+////                            'RedisPool'=>"---RedisPool----".json_encode(PoolManager::getInstance()->getPool(RedisPool::class)->status()),
+////                            'MysqlPool'=>"---MysqlPool----".json_encode(PoolManager::getInstance()->getPool(MysqlPool::class)->status())],
+////                            [], 'pool_num');
+//                        var_dump(Swoole\Coroutine::getBackTrace($cid));
+//                    }
+//                });
+
+
                 if (function_exists('opcache_reset')) {
                     //清除opcache缓存, swoole模式下建议关闭opcache
                     \opcache_reset();
@@ -149,15 +162,12 @@ class Dtsf
                     $response->end('');
                     return;
                 }
+//                Log::info($request->server['path_info'], [], 'access_log');
                 //初始化根协程ID
                 Coroutine::setBaseId();
                 //初始化上下文
                 $context = new Context($request, $response);
                 $context->set('serv', $http);
-                //workerApp初始化
-//                $containerBuilder = new ContainerBuilder();
-//                $containerBuilder->useAnnotations(true);
-//                $context->set('container', $containerBuilder->build());
                 //存放到容器pool
                 ContextPool::put($context);
                 //协程退出,自动清空

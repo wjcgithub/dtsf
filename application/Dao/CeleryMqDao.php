@@ -30,6 +30,6 @@ class CeleryMqDao extends Dao
 
     public function insert($msgid, $task, $payload, $route_key)
     {
-        return $this->getDb()->PostTask($msgid, $task, $payload, true, $route_key);
+        return $this->getDb()->PostTask($msgid, $task, $payload, false, $route_key);
     }
 }

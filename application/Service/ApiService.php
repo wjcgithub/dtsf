@@ -16,6 +16,7 @@ use App\Dao\TasksDao;
 use App\Entity\Result;
 use Dtsf\Core\Log;
 use Dtsf\Db\Redis\DtRedisReException;
+use Swoole\Coroutine;
 
 class ApiService extends AbstractService
 {
@@ -53,18 +54,17 @@ class ApiService extends AbstractService
         if(empty($msgid)) {
             $msgid = uniqid($taskInfo['taskName'], TRUE);
         }
-//        \Dtsf\Coroutine\Coroutine::create(function () use($msgid, $taskInfo,$paramsArr){
-            $cresult = CeleryMqDao::getInstance()->insert(
+        \Dtsf\Coroutine\Coroutine::create(function () use($msgid, $taskInfo,$paramsArr){
+            CeleryMqDao::getInstance()->insert(
                 $msgid,
                 $taskInfo['taskName'],
                 ['payload' => json_encode($paramsArr)],
                 $taskInfo['queueName']
             );
-//        });
+        });
         $qResult = Result::getInstance();
-        $qResult->setCode(Result::CODE_SUCCESS)->setData(['1'])->setMsg('success');
+        $qResult->setCode(Result::CODE_SUCCESS)->setData($msgid)->setMsg('success');
         return $qResult->toJson();
-        //return $this->serv->task(['celery'=>['a'=>1]]);
     }
 
     /**

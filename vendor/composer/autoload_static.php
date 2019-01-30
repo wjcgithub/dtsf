@@ -7,40 +7,19 @@ namespace Composer\Autoload;
 class ComposerStaticInitc53f4845bef2fd032e07990c1b5ab99e
 {
     public static $files = array (
-        'bd9634f2d41831496de0d3dfe4c94881' => __DIR__ . '/..' . '/symfony/polyfill-php56/bootstrap.php',
         '253c157292f75eb38082b5acb06f3f01' => __DIR__ . '/..' . '/nikic/fast-route/src/functions.php',
-        'b33e3d135e5d9e47d845c576147bda89' => __DIR__ . '/..' . '/php-di/php-di/src/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
-        'Z' => 
-        array (
-            'Zend\\EventManager\\' => 18,
-            'Zend\\Code\\' => 10,
-        ),
-        'S' => 
-        array (
-            'Symfony\\Polyfill\\Util\\' => 22,
-            'Symfony\\Polyfill\\Php56\\' => 23,
-            'SuperClosure\\' => 13,
-        ),
         'P' => 
         array (
-            'Psr\\Container\\' => 14,
-            'PhpParser\\' => 10,
-            'PhpDocReader\\' => 13,
             'PhpAmqpLib\\' => 11,
             'ParagonIE\\EasyDB\\' => 17,
             'ParagonIE\\Corner\\' => 17,
-            'PackageVersions\\' => 16,
         ),
         'N' => 
         array (
             'Noodlehaus\\' => 11,
-        ),
-        'I' => 
-        array (
-            'Invoker\\' => 8,
         ),
         'F' => 
         array (
@@ -59,8 +38,6 @@ class ComposerStaticInitc53f4845bef2fd032e07990c1b5ab99e
         'D' => 
         array (
             'Dtsf\\' => 5,
-            'Doctrine\\Common\\Annotations\\' => 28,
-            'DI\\' => 3,
         ),
         'A' => 
         array (
@@ -69,38 +46,6 @@ class ComposerStaticInitc53f4845bef2fd032e07990c1b5ab99e
     );
 
     public static $prefixDirsPsr4 = array (
-        'Zend\\EventManager\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/zendframework/zend-eventmanager/src',
-        ),
-        'Zend\\Code\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/zendframework/zend-code/src',
-        ),
-        'Symfony\\Polyfill\\Util\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-util',
-        ),
-        'Symfony\\Polyfill\\Php56\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-php56',
-        ),
-        'SuperClosure\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/jeremeamia/SuperClosure/src',
-        ),
-        'Psr\\Container\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/psr/container/src',
-        ),
-        'PhpParser\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser',
-        ),
-        'PhpDocReader\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/php-di/phpdoc-reader/src/PhpDocReader',
-        ),
         'PhpAmqpLib\\' => 
         array (
             0 => __DIR__ . '/..' . '/php-amqplib/php-amqplib/PhpAmqpLib',
@@ -113,17 +58,9 @@ class ComposerStaticInitc53f4845bef2fd032e07990c1b5ab99e
         array (
             0 => __DIR__ . '/..' . '/paragonie/corner/src',
         ),
-        'PackageVersions\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/ocramius/package-versions/src/PackageVersions',
-        ),
         'Noodlehaus\\' => 
         array (
             0 => __DIR__ . '/..' . '/hassankhan/config/src',
-        ),
-        'Invoker\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/php-di/invoker/src',
         ),
         'FastRoute\\' => 
         array (
@@ -161,34 +98,9 @@ class ComposerStaticInitc53f4845bef2fd032e07990c1b5ab99e
         array (
             0 => __DIR__ . '/../..' . '/framework/Dtsf',
         ),
-        'Doctrine\\Common\\Annotations\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/doctrine/annotations/lib/Doctrine/Common/Annotations',
-        ),
-        'DI\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/php-di/php-di/src',
-        ),
         'App\\' => 
         array (
             0 => __DIR__ . '/../..' . '/application',
-        ),
-    );
-
-    public static $prefixesPsr0 = array (
-        'P' => 
-        array (
-            'ProxyManager\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/ocramius/proxy-manager/src',
-            ),
-        ),
-        'D' => 
-        array (
-            'Doctrine\\Common\\Lexer\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/doctrine/lexer/lib',
-            ),
         ),
     );
 
@@ -207,7 +119,6 @@ class ComposerStaticInitc53f4845bef2fd032e07990c1b5ab99e
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitc53f4845bef2fd032e07990c1b5ab99e::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitc53f4845bef2fd032e07990c1b5ab99e::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitc53f4845bef2fd032e07990c1b5ab99e::$prefixesPsr0;
             $loader->classMap = ComposerStaticInitc53f4845bef2fd032e07990c1b5ab99e::$classMap;
 
         }, null, ClassLoader::class);

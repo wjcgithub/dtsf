@@ -31,10 +31,15 @@ class Dao
         if (empty($this->storage[$coId])) {
             //不同协程不能复用mysql链接, 所以通过协程id进行资源隔离
             //达到同一个协程只用一个mysql链接, 不同协程用不同的mysql链接
+//            echo "\r\n".'$this->storage: '.count($this->storage)."\r\n";
+//            echo "\r\n".'memory_use: '.(memory_get_usage()/1024/1024)."M\r\n";
             $this->storage[$coId] = PoolManager::getInstance()->getPool(Config::get($this->daoType . '.' . $this->connection . '.class'))
                 ->getObj();
             if (empty($this->storage[$coId])) {
                 Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请after{$this->waitPoolTime}s", [], 'dbpool');
+                if ($this->waitPoolTime>=3) {
+                    $this->waitPoolTime = 1;
+                }
                 \Swoole\Coroutine::sleep($this->waitPoolTime++);
                 $this->getDb();
             }else{
@@ -53,17 +58,14 @@ class Dao
      */
     public function recycle()
     {
-//        print_r("current pool count: " . count($this->storage) . "\r\n");
         $coId = Coroutine::getId();
         if (!empty($this->storage[$coId])) {
             $object = $this->storage[$coId];
+            $this->storage[$coId] = null;
             unset($this->storage[$coId]);
             $this->waitPoolTime = 1;
-//            print_r("Dao Coroutine" . \Swoole\Coroutine::getuid() . "-- defer event\r\n");
             $pool = PoolManager::getInstance()->getPool(Config::get($this->daoType . '.' . $this->connection . '.class'));
-//            print_r('release before:' . $pool->getLength() . "\r\n");
             $pool->recycleObj($object);
-//            print_r('release after:' . $pool->getLength() . "\r\n");
         }
     }
 }

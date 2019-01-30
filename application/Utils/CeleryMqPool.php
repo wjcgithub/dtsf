@@ -8,7 +8,7 @@
 
 namespace App\Utils;
 
-
+use App\Utils\CeleryMqObject;
 use Dtsf\Core\Config;
 use EasySwoole\Component\Pool\AbstractPool;
 
@@ -29,7 +29,8 @@ class CeleryMqPool extends AbstractPool
             $config['exchange'],
             '',
             $config['port'],
-            'php-amqplib'
+//            'php-amqplib'
+            'swoole'
 //            'pecl'
         );
     }
