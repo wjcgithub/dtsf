@@ -31,8 +31,6 @@ class Dao
         if (empty($this->storage[$coId])) {
             //不同协程不能复用mysql链接, 所以通过协程id进行资源隔离
             //达到同一个协程只用一个mysql链接, 不同协程用不同的mysql链接
-//            echo "\r\n".'$this->storage: '.count($this->storage)."\r\n";
-//            echo "\r\n".'memory_use: '.(memory_get_usage()/1024/1024)."M\r\n";
             $this->storage[$coId] = PoolManager::getInstance()->getPool(Config::get($this->daoType . '.' . $this->connection . '.class'))
                 ->getObj();
             if (empty($this->storage[$coId])) {

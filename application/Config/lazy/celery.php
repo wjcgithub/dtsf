@@ -4,8 +4,8 @@ return [
         'default' => [
             'class' => \App\Utils\CeleryMqPool::class,
             'pool_size' => 50,
-            'interval_check_time' => 300*1000,
-            'max_idle_time' => 150,
+            'interval_check_time' => 60*1000,
+            'max_idle_time' => 15,
             'max_object_num' => 20,
             'min_object_num' => 5,
             'get_object_timeout' => 0.5,

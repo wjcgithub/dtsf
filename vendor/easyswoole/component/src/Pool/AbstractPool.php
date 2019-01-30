@@ -109,6 +109,7 @@ abstract class AbstractPool
                 $status = $obj->beforeUse();
                 if ($status === false) {
                     $this->unsetObj($obj);
+                    $this->inuse--;
                     //重新进入对象获取
                     return $this->getObj($timeout, $beforeUseTryTimes - 1);
                 }
@@ -268,13 +269,10 @@ abstract class AbstractPool
     public function status()
     {
         return [
-            'created'=>$this->createdNum,
-            'inuse'=>$this->inuse,
-            'chan_length'=>$this->poolChannel->length(),
-            'objHash_count'=>count($this->objHash),
-            'objHash'=>$this->objHash,
-            'max'=>$this->getPoolConfig()->getMaxObjectNum(),
-            'min'=>$this->getPoolConfig()->getMinObjectNum()
+            'created' => $this->createdNum,
+            'inuse' => $this->inuse,
+            'max' => $this->getPoolConfig()->getMaxObjectNum(),
+            'min' => $this->getPoolConfig()->getMinObjectNum()
         ];
     }
 }

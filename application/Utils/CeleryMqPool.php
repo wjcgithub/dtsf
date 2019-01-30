@@ -29,8 +29,8 @@ class CeleryMqPool extends AbstractPool
             $config['exchange'],
             '',
             $config['port'],
-//            'php-amqplib'
-            'swoole'
+            'php-amqplib'
+//            'swoole'
 //            'pecl'
         );
     }
