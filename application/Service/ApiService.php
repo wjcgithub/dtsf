@@ -14,8 +14,12 @@ use App\Dao\RabbitMqDao;
 use App\Dao\RedisDefaultDao;
 use App\Dao\TasksDao;
 use App\Entity\Result;
+use CeleryException;
 use Dtsf\Core\Log;
 use Dtsf\Db\Redis\DtRedisReException;
+use PhpAmqpLib\Exception\AMQPExceptionInterface;
+use PhpAmqpLib\Exception\AMQPIOWaitException;
+use PhpAmqpLib\Exception\AMQPTimeoutException;
 
 class ApiService extends AbstractService
 {
@@ -29,11 +33,11 @@ class ApiService extends AbstractService
     const TASK_STATUS_DELETE = 2;
 
     //当存储消息时候产生的异常日志
-    private $dtqProducerErrorLog = 'dtq_producer_error.log';
+    private $dtqProducerErrorLog = 'dtq_producer_error';
     //当异常时将消息存储到db日志
-    private $dtqProducerToRabbitmqErrorLog = 'dtq_producer_to_rabbitmq_error.log';
+    private $dtqProducerToRabbitmqErrorLog = 'dtq_producer_to_rabbitmq_error';
     //保存失败时候的原始数据
-    private $dtqOriginMsg = 'dtq_origin_msg.log';
+    private $dtqOriginMsg = 'dtq_origin_msg';
 
     /**
      * @param string $msgid
@@ -49,7 +53,6 @@ class ApiService extends AbstractService
             if ($qResult->getCode() == Result::CODE_ERROR) {
                 return $qResult->toJson();
             }
-
             $taskInfo = $qResult->getData();
             $paramsArr = [];
             //task message body
@@ -62,41 +65,54 @@ class ApiService extends AbstractService
             if (empty($msgid)) {
                 $msgid = uniqid($taskInfo['taskName'], TRUE);
             }
-            \Dtsf\Coroutine\Coroutine::create(function () use ($msgid, $taskInfo, $paramsArr) {
-                CeleryMqDao::getInstance()->insert(
-                    $msgid,
-                    $taskInfo['taskName'],
-                    ['payload' => json_encode($paramsArr)],
-                    $taskInfo['queueName']
-                );
+            \Dtsf\Coroutine\Coroutine::create(function () use ($msgid, $tid, $payload, $result, $taskInfo, $paramsArr) {
+                try{
+                    CeleryMqDao::getInstance()->insert(
+                        $msgid,
+                        $taskInfo['taskName'],
+                        ['payload' => json_encode($paramsArr)],
+                        $taskInfo['queueName']
+                    );
+                } catch (\InvalidArgumentException $e) {
+                    $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
+                    Log::error($msg, [], $this->dtqProducerErrorLog);
+                } catch (CeleryException $e) {
+                    //celeryapi异常
+                    $this->performExcepiton($e, $msgid, $tid, $payload, $result);
+                } catch (\ErrorException $e) {
+                    //rabbitmq异常
+                    $this->performExcepiton($e, $msgid, $tid, $payload, $result);
+                } catch (AMQPIOWaitException $e) {
+                    //rabbitmq异常
+                    $this->performExcepiton($e, $msgid, $tid, $payload, $result);
+                } catch (AMQPTimeoutException $e) {
+                    //rabbitmq异常
+                    $this->performExcepiton($e, $msgid, $tid, $payload, $result);
+                } catch (AMQPExceptionInterface $e) {
+                    //rabbitmq异常
+                    $this->performExcepiton($e, $msgid, $tid, $payload, $result);
+                } catch (\Exception $e) {
+                    $this->logMsgInfoOnException($tid, $payload);
+                    $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile() . '---line' . $e->getLine();
+                    Log::error($msg, [], $this->dtqProducerErrorLog);
+                } catch (\Swoole\ExitException $e) {
+                    $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile()
+                        . '---line' . $e->getLine() . '---swoole-status' . $e->getStatus() . '---swoole-flags' . $e->getFlags();
+                    Log::error($msg, [], $this->dtqProducerErrorLog);
+                }
             });
 
             $qResult->setCode(Result::CODE_SUCCESS)->setData($msgid)->setMsg('success');
         } catch (\InvalidArgumentException $e) {
 //            $this->logMsgInfoOnException($tid, $payload);
             $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
-            log::error($msg, [], $this->dtqProducerErrorLog);
+            Log::error($msg, [], $this->dtqProducerErrorLog);
             $result->setCode(Result::CODE_ERROR)->setMsg($e->getMessage());
-//        } catch (CeleryException $e) {
-//            //celeryapi异常
-//            $result = $this->performExcepiton($e, $msgid, $tid, $payload, $result);
-//        } catch (\ErrorException $e) {
-//            //rabbitmq异常
-//            $result = $this->performExcepiton($e, $msgid, $tid, $payload, $result);
-//        } catch (AMQPIOWaitException $e) {
-//            //rabbitmq异常
-//            $result = $this->performExcepiton($e, $msgid, $tid, $payload, $result);
-//        } catch (AMQPTimeoutException $e) {
-//            //rabbitmq异常
-//            $result = $this->performExcepiton($e, $msgid, $tid, $payload, $result);
-//        } catch (AMQPExceptionInterface $e) {
-//            //rabbitmq异常
-//            $result = $this->performExcepiton($e, $msgid, $tid, $payload, $result);
-//        } catch (\Exception $e) {
-//            $this->logMsgInfoOnException($tid, $payload);
-//            $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile() . '---line' . $e->getLine();
-//            $result->setCode(Result::CODE_ERROR)->setMsg('操作失败');
-//            Log::error($msg, [], $this->dtqProducerErrorLog);
+        } catch (\Exception $e) {
+            $this->logMsgInfoOnException($tid, $payload);
+            $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile() . '---line' . $e->getLine();
+            $result->setCode(Result::CODE_ERROR)->setMsg('操作失败');
+            Log::error($msg, [], $this->dtqProducerErrorLog);
         } catch (\Swoole\ExitException $e) {
             $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile()
                 . '---line' . $e->getLine() . '---swoole-status' . $e->getStatus() . '---swoole-flags' . $e->getFlags();
@@ -135,13 +151,13 @@ class ApiService extends AbstractService
             //缓存链接失败，或超时，读取数据库，并返回结果，防止缓存关掉接口不能用
             $taskInfo = $this->generateCacheArr($tid);
             $result->setCode(Result::CODE_SUCCESS)->setMsg('success')->setData($taskInfo);
-            Log::error('redis服务链接异常, host:');
+            Log::error('redis服务链接异常, host:', [], $this->dtqProducerErrorLog);
         } catch (\InvalidArgumentException $e) {
-            Log::error($e->getMessage() . '-----' . $e->getTraceAsString());
+            Log::error($e->getMessage() . '-----' . $e->getTraceAsString(), [], $this->dtqProducerErrorLog);
             $result->setCode(Result::CODE_ERROR)->setMsg($e->getMessage());
         } catch (\Exception $e) {
             $result->setCode(Result::CODE_ERROR)->setMsg('获取任务信息异常');
-            Log::error($e->getMessage() . '-----' . $e->getTraceAsString());
+            Log::error($e->getMessage() . '-----' . $e->getTraceAsString(), [], $this->dtqProducerErrorLog);
         }
         return $result;
     }
@@ -205,41 +221,41 @@ class ApiService extends AbstractService
      * @param $result
      * @return mixed
      */
-//    private function performExcepiton($e, $msgid, $tid, $payload, $result)
-//    {
-//        $this->logMsgInfoOnException($tid, $payload);
-//        $msg = '链接失败, msg---' . $e->getMessage() . '---file:' . $e->getFile() . '---line' . $e->getLine();
-//        log::error($msg, [], $this->dtqProducerErrorLog);
-//        $errorParam = [];
-//        try {
-//            $errorParam['msgid'] = $msgid;
-//            $errorParam['tid'] = $tid;
-//            $errorParam['payload'] = $payload;
-//            $errorParam['msg'] = $e->getMessage();
-//            $errorParam['ctime'] = date('Y-m-d H:i:s');
+    private function performExcepiton($e, $msgid, $tid, $payload, $result)
+    {
+        $this->logMsgInfoOnException($tid, $payload);
+        $msg = '链接失败, msg---' . $e->getMessage() . '---file:' . $e->getFile() . '---line' . $e->getLine();
+        Log::error($msg, [], $this->dtqProducerErrorLog);
+        $errorParam = [];
+        try {
+            $errorParam['msgid'] = $msgid;
+            $errorParam['tid'] = $tid;
+            $errorParam['payload'] = $payload;
+            $errorParam['msg'] = $e->getMessage();
+            $errorParam['ctime'] = date('Y-m-d H:i:s');
 //            ProducerErrorMsg::insert($errorParam);
-//        } catch (\Exception $e) {
-//            $userName = 'wangjichao';
-//            $msg1 = '生产者发生严重错误';
-//            $msg2 = '生产者发生严重错误';
-//            $msg3 = '投递的消息写入rabbitmq失败后存储到mysql也失败了，需要手动从日志中恢复（dtq_producer_to_rabbitmq_error.log）！';
-//            $msg4 = '投递的消息写入rabbitmq失败后存储到mysql也失败了，需要手动从日志中恢复（dtq_producer_to_rabbitmq_error.log）！';
+        } catch (\Exception $e) {
+            $userName = 'wangjichao';
+            $msg1 = '生产者发生严重错误';
+            $msg2 = '生产者发生严重错误';
+            $msg3 = '投递的消息写入rabbitmq失败后存储到mysql也失败了，需要手动从日志中恢复（dtq_producer_to_rabbitmq_error.log）！';
+            $msg4 = '投递的消息写入rabbitmq失败后存储到mysql也失败了，需要手动从日志中恢复（dtq_producer_to_rabbitmq_error.log）！';
 //            CommonService::getInstance()->weixinNotice($userName, $msg1, $msg2, $msg3, $msg4);
-//            XinLogService::getInstance()->logError('保存投递失败消息失败----msg' . $e->getMessage() . "--body:" . json_encode($errorParam), $this->dtqProducerToRabbitmqErrorLog);
-//        }
-//
-//        $result->setCode(Result::CODE_SUCCESS)->setMsg('success');
-//        return $result;
-//    }
-//
-//    /**
-//     * 当异常发生时，记录原始数据
-//     *
-//     * @param $tid
-//     * @param $payload
-//     */
-//    private function logMsgInfoOnException($tid, $payload)
-//    {
-//        log::error('tid:' . $tid . '----payload' . $payload, [], $this->dtqOriginMsg);
-//    }
+            Log::error('保存投递失败消息失败----msg' . $e->getMessage() . "--body:" . json_encode($errorParam), [], $this->dtqProducerToRabbitmqErrorLog);
+        }
+
+        $result->setCode(Result::CODE_SUCCESS)->setMsg('success');
+        return $result;
+    }
+
+    /**
+     * 当异常发生时，记录原始数据
+     *
+     * @param $tid
+     * @param $payload
+     */
+    private function logMsgInfoOnException($tid, $payload)
+    {
+        Log::error('tid:' . $tid . '----payload' . $payload, [], $this->dtqOriginMsg);
+    }
 }
