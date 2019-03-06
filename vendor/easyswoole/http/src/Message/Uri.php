@@ -45,7 +45,7 @@ class Uri
     {
         // TODO: Implement getAuthority() method.
         $authority = $this->host;
-        if ($this->userInfo !== '') {
+        if (!empty($this->userInfo)) {
             $authority = $this->userInfo . '@' . $authority;
         }
         if ($this->port !== null) {

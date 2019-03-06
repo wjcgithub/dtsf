@@ -1,29 +1,29 @@
 [
     {
         "name": "easyswoole/component",
-        "version": "1.4.15",
-        "version_normalized": "1.4.15.0",
+        "version": "1.5.3",
+        "version_normalized": "1.5.3.0",
         "source": {
             "type": "git",
             "url": "https://github.com/easy-swoole/component.git",
-            "reference": "575558a18335b3f5269b49303251e22e36a1b86a"
+            "reference": "ad3deffab4fce939a14527737bb2f61b719da5ad"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/component/zipball/575558a18335b3f5269b49303251e22e36a1b86a",
-            "reference": "575558a18335b3f5269b49303251e22e36a1b86a",
+            "url": "https://api.github.com/repos/easy-swoole/component/zipball/ad3deffab4fce939a14527737bb2f61b719da5ad",
+            "reference": "ad3deffab4fce939a14527737bb2f61b719da5ad",
             "shasum": ""
         },
         "require": {
-            "easyswoole/swoole-ide-helper": "^1.2",
             "easyswoole/utility": "^1.0",
-            "ext-swoole": "^4.2.9",
+            "ext-swoole": "^4.3.0",
             "php": ">=7.1.0"
         },
         "require-dev": {
-            "easyswoole/phpunit": "^1.0"
+            "easyswoole/phpunit": "^1.0",
+            "easyswoole/swoole-ide-helper": "^1.2"
         },
-        "time": "2019-01-28T04:20:14+00:00",
+        "time": "2019-02-24T04:13:06+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -53,17 +53,17 @@
     },
     {
         "name": "easyswoole/http",
-        "version": "1.2.11",
-        "version_normalized": "1.2.11.0",
+        "version": "1.2.14",
+        "version_normalized": "1.2.14.0",
         "source": {
             "type": "git",
             "url": "https://github.com/easy-swoole/http.git",
-            "reference": "91c554067c8e62ae2daee8866c186d8185b72447"
+            "reference": "88fe7d6d8de764e8e6852b10592350d0dcc05b91"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/http/zipball/91c554067c8e62ae2daee8866c186d8185b72447",
-            "reference": "91c554067c8e62ae2daee8866c186d8185b72447",
+            "url": "https://api.github.com/repos/easy-swoole/http/zipball/88fe7d6d8de764e8e6852b10592350d0dcc05b91",
+            "reference": "88fe7d6d8de764e8e6852b10592350d0dcc05b91",
             "shasum": ""
         },
         "require": {
@@ -77,7 +77,7 @@
         "require-dev": {
             "easyswoole/swoole-ide-helper": "^1.0"
         },
-        "time": "2019-01-23T09:19:18+00:00",
+        "time": "2019-03-01T03:31:46+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -198,54 +198,24 @@
         ]
     },
     {
-        "name": "easyswoole/swoole-ide-helper",
-        "version": "1.2.1",
-        "version_normalized": "1.2.1.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/easy-swoole/ide-helper.git",
-            "reference": "a6c7e013934b0663e1dac41cdc5dc5c85534c331"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/ide-helper/zipball/a6c7e013934b0663e1dac41cdc5dc5c85534c331",
-            "reference": "a6c7e013934b0663e1dac41cdc5dc5c85534c331",
-            "shasum": ""
-        },
-        "time": "2018-12-25T07:27:15+00:00",
-        "type": "library",
-        "installation-source": "dist",
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "Apache-2.0"
-        ],
-        "authors": [
-            {
-                "name": "Team Swoole",
-                "email": "team@swoole.com"
-            }
-        ],
-        "description": "swoole-ide-helper"
-    },
-    {
         "name": "easyswoole/utility",
-        "version": "1.0.6",
-        "version_normalized": "1.0.6.0",
+        "version": "1.0.8",
+        "version_normalized": "1.0.8.0",
         "source": {
             "type": "git",
             "url": "https://github.com/easy-swoole/utility.git",
-            "reference": "7b2269bf5b43d40182b5fea09324b5ea0871ef40"
+            "reference": "99ce99441d0e54bb62c82feeefbbe45207ed32b6"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/utility/zipball/7b2269bf5b43d40182b5fea09324b5ea0871ef40",
-            "reference": "7b2269bf5b43d40182b5fea09324b5ea0871ef40",
+            "url": "https://api.github.com/repos/easy-swoole/utility/zipball/99ce99441d0e54bb62c82feeefbbe45207ed32b6",
+            "reference": "99ce99441d0e54bb62c82feeefbbe45207ed32b6",
             "shasum": ""
         },
         "require": {
             "php": ">=7.1.0"
         },
-        "time": "2019-01-10T12:51:46+00:00",
+        "time": "2019-03-01T03:05:13+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -316,17 +286,17 @@
     },
     {
         "name": "hassankhan/config",
-        "version": "2.0.0",
-        "version_normalized": "2.0.0.0",
+        "version": "2.0.1",
+        "version_normalized": "2.0.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/hassankhan/config.git",
-            "reference": "56f22b988d0b81bc9bae730c778afa0bbbf0e726"
+            "reference": "5c0ad8e530013c559cfa1e7e77a586075e667f56"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/hassankhan/config/zipball/56f22b988d0b81bc9bae730c778afa0bbbf0e726",
-            "reference": "56f22b988d0b81bc9bae730c778afa0bbbf0e726",
+            "url": "https://api.github.com/repos/hassankhan/config/zipball/5c0ad8e530013c559cfa1e7e77a586075e667f56",
+            "reference": "5c0ad8e530013c559cfa1e7e77a586075e667f56",
             "shasum": ""
         },
         "require": {
@@ -341,7 +311,7 @@
         "suggest": {
             "symfony/yaml": "~3.4"
         },
-        "time": "2018-10-03T20:34:25+00:00",
+        "time": "2019-02-01T13:58:25+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

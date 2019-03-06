@@ -20,21 +20,47 @@ class Php implements ParserInterface
 {
     /**
      * {@inheritDoc}
+     * Loads a PHP file and gets its' contents as an array
+     *
+     * @throws ParseException             If the PHP file throws an exception
+     * @throws UnsupportedFormatException If the PHP file does not return an array
+     */
+    public function parseFile($filename)
+    {
+        // Run the fileEval the string, if it throws an exception, rethrow it
+        try {
+            $data = require $filename;
+        } catch (Exception $exception) {
+            throw new ParseException(
+                [
+                    'message'   => 'PHP file threw an exception',
+                    'exception' => $exception,
+                ]
+            );
+        }
+
+        // Complete parsing
+        return $this->parse($data, $filename);
+    }
+
+    /**
+     * {@inheritDoc}
      * Loads a PHP string and gets its' contents as an array
      *
      * @throws ParseException             If the PHP string throws an exception
      * @throws UnsupportedFormatException If the PHP string does not return an array
      */
-    public function parse($config, $filename = null)
+    public function parseString($config)
     {
-        // Strip PHP start and end tags
-        $config = str_replace('<?php', '', $config);
-        $config = str_replace('<?', '', $config);
-        $config = str_replace('?>', '', $config);
+        // Handle PHP start tag
+        $config = trim($config);
+        if (substr($config, 0, 2) === '<?') {
+            $config = '?>' . $config;
+        }
 
         // Eval the string, if it throws an exception, rethrow it
         try {
-            $temp = eval($config);
+            $data = $this->isolate($config);
         } catch (Exception $exception) {
             throw new ParseException(
                 [
@@ -44,17 +70,43 @@ class Php implements ParserInterface
             );
         }
 
+        // Complete parsing
+        return $this->parse($data);
+    }
+
+    /**
+     * Completes parsing of PHP data
+     *
+     * @param  array   $data
+     * @param  strring $filename
+     *
+     * @throws ParseException If there is an error parsing the PHP data
+     */
+    protected function parse($data = null, $filename = null)
+    {
         // If we have a callable, run it and expect an array back
-        if (is_callable($temp)) {
-            $temp = call_user_func($temp);
+        if (is_callable($data)) {
+            $data = call_user_func($data);
         }
 
         // Check for array, if its anything else, throw an exception
-        if (!is_array($temp)) {
-            throw new UnsupportedFormatException('PHP string does not return an array');
+        if (!is_array($data)) {
+            throw new UnsupportedFormatException('PHP data does not return an array');
         }
 
-        return $temp;
+        return $data;
+    }
+
+    /**
+     * Runs PHP string in isolated method
+     *
+     * @param  string $EGsfKPdue7ahnMTy
+     *
+     * @return array
+     */
+    protected function isolate($EGsfKPdue7ahnMTy)
+    {
+        return eval($EGsfKPdue7ahnMTy);
     }
 
     /**

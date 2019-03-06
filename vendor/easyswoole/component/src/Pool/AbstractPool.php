@@ -9,14 +9,14 @@
 namespace EasySwoole\Component\Pool;
 
 
-use EasySwoole\Component\Pool\Exception\PoolEmpty;
 use EasySwoole\Component\Pool\Exception\PoolObjectNumError;
-use EasySwoole\Component\Pool\Exception\PoolException;
 use EasySwoole\Utility\Random;
 use Swoole\Coroutine\Channel;
 
 abstract class AbstractPool
 {
+    use TraitInvoker;
+
     private $createdNum = 0;
     private $inuse = 0;
     private $poolChannel;
@@ -77,9 +77,9 @@ abstract class AbstractPool
                  * 创建对象的时候，请加try,尽量不要抛出异常
                  */
                 $obj = $this->createObject();
-                $hash = Random::character(16);
                 if (is_object($obj)) {
                     //标记手动标记一个id   spl_hash 存在坑
+                    $hash = Random::character(16);
                     $obj->__objectHash = $hash;
                     //标记为false,才可以允许put回去队列
                     $this->objHash[$hash] = false;
@@ -109,7 +109,6 @@ abstract class AbstractPool
                 $status = $obj->beforeUse();
                 if ($status === false) {
                     $this->unsetObj($obj);
-                    $this->inuse--;
                     //重新进入对象获取
                     return $this->getObj($timeout, $beforeUseTryTimes - 1);
                 }
@@ -184,28 +183,6 @@ abstract class AbstractPool
         return $this->conf;
     }
 
-    public static function invoke(callable $call, float $timeout = null)
-    {
-        $pool = PoolManager::getInstance()->getPool(static::class);
-        if ($pool instanceof AbstractPool) {
-            $obj = $pool->getObj($timeout);
-            if ($obj) {
-                try {
-                    $ret = call_user_func($call, $obj);
-                    return $ret;
-                } catch (\Throwable $throwable) {
-                    throw $throwable;
-                } finally {
-                    $pool->recycleObj($obj);
-                }
-            } else {
-                throw new PoolEmpty(static::class . " pool is empty");
-            }
-        } else {
-            throw new PoolException(static::class . " convert to pool error");
-        }
-    }
-
     public function keepMin(?int $num = null): int
     {
         if ($num == null) {
@@ -264,6 +241,11 @@ abstract class AbstractPool
             }
         }
         return false;
+    }
+
+    public function getConfig():PoolConf
+    {
+        return $this->conf;
     }
 
     public function status()

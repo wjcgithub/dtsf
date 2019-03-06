@@ -125,6 +125,7 @@ class Dispatcher
             }else if(is_string($handler)){
                 $path = UrlParser::pathInfo($handler);
                 $request->getUri()->withPath($path);
+                goto response;
             }
             /*
                 * 全局模式的时候，都拦截。非全局模式，否则继续往下
@@ -137,8 +138,9 @@ class Dispatcher
         if($response->isEndResponse()){
             return;
         }
-
-        $this->controllerHandler($request,$response,$path);
+        response:{
+            $this->controllerHandler($request,$response,$path);
+        }
     }
 
     private function controllerHandler(Request $request,Response $response,string $path)
@@ -183,7 +185,7 @@ class Dispatcher
             if($c instanceof Controller){
                 try{
                     $path = $c->__hook($actionName,$request,$response);
-                    if($path){
+                    if(is_string($path)){
                         $path = UrlParser::pathInfo($path);
                         $request->getUri()->withPath($path);
                         $this->dispatch($request,$response);
