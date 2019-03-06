@@ -29,4 +29,9 @@ class Controller
         $this->request = $context->getRequest();
         $this->data = $this->request->getRequestParam();
     }
+
+    public function __destruct()
+    {
+        $this->data = null;
+    }
 }

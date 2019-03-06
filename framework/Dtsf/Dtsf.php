@@ -1,18 +1,13 @@
 <?php
 namespace Dtsf;
 
-use App\Dao\RabbitMqDao;
 use App\Providers\DtsfInitProvider;
-use App\Utils\CeleryMqPool;
-use App\Utils\MysqlPool;
-use App\Utils\RedisPool;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Core\Route;
 use Dtsf\Coroutine\Context;
 use Dtsf\Coroutine\Coroutine;
 use Dtsf\Pool\ContextPool;
-use EasySwoole\Component\Pool\PoolManager;
 use Swoole;
 
 class Dtsf
@@ -86,28 +81,6 @@ class Dtsf
 
             $http->on('workerStart', function (Swoole\Http\Server $serv, int $worker_id) {
                 Log::info("worker {worker_id} started.", ['{worker_id}' => $worker_id], 'start');
-                swoole_timer_tick(1000, function () use ($serv) {
-                    Log::info(['t' => json_encode($serv->stats())], [], 'monitor');
-                    Log::info([
-                        'CeleryMqPool'=>"---CeleryMqPool----".json_encode(PoolManager::getInstance()->getPool(CeleryMqPool::class)->status()),
-                        'RedisPool'=>"---RedisPool----".json_encode(PoolManager::getInstance()->getPool(RedisPool::class)->status()),
-                        'MysqlPool'=>"---MysqlPool----".json_encode(PoolManager::getInstance()->getPool(MysqlPool::class)->status())],
-                        [], 'pool_num');
-                });
-//                swoole_timer_tick(2000, function () {
-//                    $coros = Swoole\Coroutine::listCoroutines();
-//                    foreach($coros as $cid)
-//                    {
-////                        Log::info([
-////                            'CeleryMqPool'=>"---CeleryMqPool----".json_encode(PoolManager::getInstance()->getPool(CeleryMqPool::class)->status()),
-////                            'RedisPool'=>"---RedisPool----".json_encode(PoolManager::getInstance()->getPool(RedisPool::class)->status()),
-////                            'MysqlPool'=>"---MysqlPool----".json_encode(PoolManager::getInstance()->getPool(MysqlPool::class)->status())],
-////                            [], 'pool_num');
-//                        var_dump(Swoole\Coroutine::getBackTrace($cid));
-//                    }
-//                });
-
-
                 if (function_exists('opcache_reset')) {
                     //清除opcache缓存, swoole模式下建议关闭opcache
                     \opcache_reset();
@@ -142,27 +115,17 @@ class Dtsf
                 DtsfInitProvider::workerStop($worker_id);
             });
 
-            /**
-             * @todo test use
-             */
-//            $http->on('task', function (Swoole\Http\Server $serv, Swoole\Server\Task $task) {
-//                $data = $task->data;
-//                Swoole\Coroutine::sleep(0.3);
-//                $task->finish($data);
-//            });
-//
-//            $http->on('finish', function ($response) {
-//
-//            });
+            $http->on('workerExit', function (Swoole\Http\Server $serv, int $worker_id) {
+                Log::info("worker {worker_id} exit.", ['{worker_id}' => $worker_id], 'stop');
+                DtsfInitProvider::workerExit($worker_id);
+            });
 
-
-                //accept http request
+            //accept http request
             $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) use ($http) {
                 if ('/favicon.ico' === $request->server['path_info']) {
                     $response->end('');
                     return;
                 }
-//                Log::info($request->server['path_info'], [], 'access_log');
                 //初始化根协程ID
                 Coroutine::setBaseId();
                 //初始化上下文

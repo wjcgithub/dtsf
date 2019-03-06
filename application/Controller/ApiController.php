@@ -25,10 +25,13 @@ class ApiController extends Controller
      */
     public function PostTask()
     {
+        static $i = 0;
         if(!ApiValidate::getInstance()->PostTaskValidate($this->data)){
             return ApiValidate::getInstance()->getError()->__toString();
         }
-        return ApiService::getInstance()->PostTask('',$this->data['messageno'],$this->data['messagebody']);
+        $cmsg = posix_getpid() . ' i am message (' . uniqid(time() . random_int(1, 10000), true) . ')-> ' . $i++;
+        echo "\r\n".$cmsg."\r\n";
+        return ApiService::getInstance()->PostTask('',$this->data['messageno'],$cmsg);
     }
 
     public function test()

@@ -29,6 +29,9 @@ class CeleryMqPool extends AbstractPool
             $config['exchange'],
             '',
             $config['port'],
+            function ($m){echo "\r\n ack ok ". $m->body ." \r\n";},
+            function ($m){echo "\r\n nack ok \r\n";},
+            function ($m){echo "\r\n return error \r\n";},
             'php-amqplib'
 //            'swoole'
 //            'pecl'

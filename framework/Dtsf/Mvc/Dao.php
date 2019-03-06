@@ -39,7 +39,7 @@ class Dao
                     $this->waitPoolTime = 1;
                 }
                 \Swoole\Coroutine::sleep($this->waitPoolTime++);
-                $this->getDb();
+                return $this->getDb();
             }else{
                 defer(function () {
                     $this->recycle();
