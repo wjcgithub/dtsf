@@ -40,8 +40,6 @@ class CeleryMqObject extends \Celery implements PoolObjectInterface
      */
     public function beforeUse(): bool
     {
-        // 此处可以进行链接是否断线的判断 使用不同的数据库操作类时可以根据自己情况修改
-//        return $this->getRedis()->connected;
         return $this->getBrokerConnectStatus();
     }
 

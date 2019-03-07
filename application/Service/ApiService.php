@@ -16,6 +16,7 @@ use App\Dao\TasksDao;
 use App\Entity\Result;
 use CeleryException;
 use Dtsf\Core\Log;
+use Dtsf\Core\WorkerApp;
 use Dtsf\Db\Redis\DtRedisReException;
 use PhpAmqpLib\Exception\AMQPExceptionInterface;
 use PhpAmqpLib\Exception\AMQPIOWaitException;
@@ -99,12 +100,19 @@ class ApiService extends AbstractService
                     $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile()
                         . '---line' . $e->getLine() . '---swoole-status' . $e->getStatus() . '---swoole-flags' . $e->getFlags();
                     Log::error($msg, [], $this->dtqProducerErrorLog);
+                } catch (\Throwable $throwable) {
+                    Log::error("{worker_id} post to mq error on coroutine, and current app status is {status}, msg: {msg}."
+                        , [
+                            '{worker_id}' => posix_getppid(),
+                            '{status}'=>WorkerApp::getInstance()->serverStatus,
+                            '{msg}'=> $throwable->getMessage().'====trace:'.$throwable->getTraceAsString()
+                        ]
+                        , $this->dtqProducerErrorLog);
                 }
             });
 
             $qResult->setCode(Result::CODE_SUCCESS)->setData($msgid)->setMsg('success');
         } catch (\InvalidArgumentException $e) {
-//            $this->logMsgInfoOnException($tid, $payload);
             $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
             Log::error($msg, [], $this->dtqProducerErrorLog);
             $result->setCode(Result::CODE_ERROR)->setMsg($e->getMessage());
@@ -118,6 +126,14 @@ class ApiService extends AbstractService
                 . '---line' . $e->getLine() . '---swoole-status' . $e->getStatus() . '---swoole-flags' . $e->getFlags();
             Log::error($msg, [], $this->dtqProducerErrorLog);
             $result->setCode(Result::CODE_ERROR)->setMsg('操作失败');
+        } catch (\Throwable $throwable) {
+            Log::error("{worker_id} post to mq error, and current app status is {status}, msg: {msg}."
+                , [
+                    '{worker_id}' => posix_getppid(),
+                    '{status}'=>WorkerApp::getInstance()->serverStatus,
+                    '{msg}'=> $throwable->getMessage().'====trace:'.$throwable->getTraceAsString()
+                ]
+                , $this->dtqProducerErrorLog);
         }
 
         return $result->toJson();

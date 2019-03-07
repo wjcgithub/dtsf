@@ -28,6 +28,7 @@ class WorkerApp
     private function __construct()
     {
         $this->debugDirName = 'debuginfo';
+        $this->ackErrorDirName = 'mq_ack_error';
     }
 
     public function init()
