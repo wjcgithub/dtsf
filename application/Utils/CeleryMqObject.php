@@ -9,12 +9,22 @@
 namespace App\Utils;
 
 
+use Dtsf\Core\Log;
+use Dtsf\Core\WorkerApp;
 use EasySwoole\Component\Pool\PoolObjectInterface;
 
 class CeleryMqObject extends \Celery implements PoolObjectInterface
 {
+    public $objectName = '';
     public function gc()
     {
+        Log::debug("obj {obj} of worker {worker_id} start execting celeryMq gc, and current app status is {status}."
+            , [
+                '{obj}' => $this->objectName,
+                '{worker_id}' => posix_getppid(),
+                '{status}'=>WorkerApp::getInstance()->serverStatus
+            ]
+            , WorkerApp::getInstance()->debugDirName);
         $this->recycleLastAck();
     }
 
@@ -32,11 +42,7 @@ class CeleryMqObject extends \Celery implements PoolObjectInterface
     {
         // 此处可以进行链接是否断线的判断 使用不同的数据库操作类时可以根据自己情况修改
 //        return $this->getRedis()->connected;
-        return true;
+        return $this->getBrokerConnectStatus();
     }
 
-    public function push()
-    {
-//        $this->
-    }
 }

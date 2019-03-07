@@ -6,6 +6,7 @@ use App\Utils\MysqlPool;
 use App\Utils\RedisPool;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
+use Dtsf\Core\Singleton;
 use EasySwoole\Component\Pool\PoolManager;
 
 /**
@@ -16,7 +17,9 @@ use EasySwoole\Component\Pool\PoolManager;
  */
 class DtsfInitProvider
 {
-    public static function workerStart($worker_id)
+    use Singleton;
+
+    public function workerStart($worker_id)
     {
         if (($worker_id < Config::get('swoole_setting.worker_num')) && $worker_id >= 0) {
             $mysqlConfig = Config::get('mysql.default');
@@ -51,9 +54,11 @@ class DtsfInitProvider
 //                PoolManager::getInstance()->getPool($rabbitmqConfig['class'])->preLoad($rabbitmqConfig['min_object_num']);
             }
         }
+
+        $this->debugPoolInfo();
     }
 
-    public static function workerStop($worker_id)
+    public function workerStop($worker_id)
     {
 //        if (($worker_id < Config::get('swoole_setting.worker_num')) && $worker_id >= 0) {
 //            $mysqlConfig = Config::get('mysql.default');
@@ -92,20 +97,28 @@ class DtsfInitProvider
         }
     }
 
-    private function debugInfo()
+    /**
+     * debug链接池信息
+     */
+    private function debugPoolInfo()
     {
-        swoole_timer_tick(2000, function () {
+        swoole_timer_tick(5000, function () {
             Log::info([
                 'CeleryMqPool'=>"---CeleryMqPool----".json_encode(PoolManager::getInstance()->getPool(CeleryMqPool::class)->status()),
                 'RedisPool'=>"---RedisPool----".json_encode(PoolManager::getInstance()->getPool(RedisPool::class)->status()),
                 'MysqlPool'=>"---MysqlPool----".json_encode(PoolManager::getInstance()->getPool(MysqlPool::class)->status())],
                 [], 'pool_num');
+        });
+    }
 
-                $coros = Swoole\Coroutine::listCoroutines();
-                foreach($coros as $cid)
-                {
-                    var_dump(Swoole\Coroutine::getBackTrace($cid));
-                }
+    private function debugCoroutineInfo()
+    {
+        swoole_timer_tick(2000, function () {
+            $coros = Swoole\Coroutine::listCoroutines();
+            foreach($coros as $cid)
+            {
+                var_dump(Swoole\Coroutine::getBackTrace($cid));
+            }
         });
     }
 }

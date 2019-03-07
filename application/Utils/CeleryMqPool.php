@@ -21,7 +21,7 @@ class CeleryMqPool extends AbstractPool
     protected function createObject()
     {
         $config = Config::get('celery.default');
-        return new CeleryMqObject(
+        $obj = new CeleryMqObject(
             $config['host'],
             $config['uname'],
             $config['pwd'],
@@ -36,6 +36,8 @@ class CeleryMqPool extends AbstractPool
 //            'swoole'
 //            'pecl'
         );
+        $obj->objectName = uniqid();
+        return $obj;
     }
 
     public function getLength()

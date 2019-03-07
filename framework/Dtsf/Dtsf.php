@@ -5,6 +5,7 @@ use App\Providers\DtsfInitProvider;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Core\Route;
+use Dtsf\Core\WorkerApp;
 use Dtsf\Coroutine\Context;
 use Dtsf\Coroutine\Coroutine;
 use Dtsf\Pool\ContextPool;
@@ -53,6 +54,7 @@ class Dtsf
                 if (PHP_OS != 'Darwin') {
                     cli_set_process_title($serverName);
                 }
+
                 //日志初始化
                 Log::init();
                 file_put_contents(self::$rootPath . DS . 'bin' . DS . 'master.pid', $serv->master_pid);
@@ -100,7 +102,8 @@ class Dtsf
                         cli_set_process_title("{$name}.{$type}.{$worker_id}");
                     }
                     //给用户自己的权利去初始化
-                    DtsfInitProvider::workerStart($worker_id);
+                    DtsfInitProvider::getInstance()->workerStart($worker_id);
+                    WorkerApp::getInstance()->workerStarted();
                 } catch (\Exception $e) {
                     Log::error($e->getMessage());
                     $serv->shutdown();
@@ -112,12 +115,14 @@ class Dtsf
 
             $http->on('workerStop', function (Swoole\Http\Server $serv, int $worker_id) {
                 Log::info("worker {worker_id} stoped.", ['{worker_id}' => $worker_id], 'stop');
-                DtsfInitProvider::workerStop($worker_id);
+                WorkerApp::getInstance()->workerStoped();
+                DtsfInitProvider::getInstance()->workerStop($worker_id);
             });
 
             $http->on('workerExit', function (Swoole\Http\Server $serv, int $worker_id) {
                 Log::info("worker {worker_id} exit.", ['{worker_id}' => $worker_id], 'stop');
-                DtsfInitProvider::workerExit($worker_id);
+                WorkerApp::getInstance()->workerExit();
+                DtsfInitProvider::getInstance()->workerExit($worker_id);
             });
 
             //accept http request
