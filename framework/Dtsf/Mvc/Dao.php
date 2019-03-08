@@ -58,12 +58,14 @@ class Dao
     {
         $coId = Coroutine::getId();
         if (!empty($this->storage[$coId])) {
+            echo "test";
             $object = $this->storage[$coId];
             $this->storage[$coId] = null;
             unset($this->storage[$coId]);
             $this->waitPoolTime = 1;
             $pool = PoolManager::getInstance()->getPool(Config::get($this->daoType . '.' . $this->connection . '.class'));
             $pool->recycleObj($object);
+            unset($object);
         }
     }
 }

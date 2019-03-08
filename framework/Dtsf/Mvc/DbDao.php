@@ -164,9 +164,7 @@ class DbDao extends Dao
         }
         $strUpdateFields = rtrim($strUpdateFields, ',');
         $query = "UPDATE {$this->getLibName()} SET {$strUpdateFields} WHERE {$where}";
-        echo $query;
-        $result = $this->db->query($query);
-        return $result['affected_rows'];
+        return $this->getDb()->rawQuery($query);
     }
 
     /**
