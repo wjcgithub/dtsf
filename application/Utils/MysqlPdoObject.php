@@ -9,6 +9,8 @@ namespace App\Utils;
  */
 use EasySwoole\Component\Pool\PoolObjectInterface;
 use ParagonIE\EasyDB\Factory;
+use PDO;
+use PDOException;
 
 class MysqlPdoObject extends Factory implements PoolObjectInterface
 {
@@ -33,6 +35,22 @@ class MysqlPdoObject extends Factory implements PoolObjectInterface
     function beforeUse(): bool
     {
         // 此处可以进行链接是否断线的判断 使用不同的数据库操作类时可以根据自己情况修改
-//        return $this->getMysqlClient()->connected;
+        return $this->pdo_ping();
+    }
+
+    /**
+     * 检查连接是否可用
+     * @param  Link $dbconn 数据库连接
+     * @return Boolean
+     */
+    function pdo_ping(){
+        try{
+            $this->getAttribute(PDO::ATTR_SERVER_INFO);
+        } catch (PDOException $e) {
+            if(strpos($e->getMessage(), 'MySQL server has gone away')!==false){
+                return false;
+            }
+        }
+        return true;
     }
 }

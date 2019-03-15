@@ -19,6 +19,7 @@ class WorkerApp
     const WORKERSTARTED = 1;
     const WORKERSTOPED = 2;
     const WORKEREXIT = 3;
+    const WORKERLASTACK = 4;
 
     private $app = null;
     private $container = null;

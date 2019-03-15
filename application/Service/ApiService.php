@@ -69,18 +69,20 @@ class ApiService extends AbstractService
             if (empty($msgid)) {
                 $msgid = uniqid($taskInfo['taskName'], TRUE);
             }
+
             \Dtsf\Coroutine\Coroutine::create(function () use ($msgid, $tid, $payload, $result, $taskInfo, $paramsArr) {
                 try {
+
                     //写入数据库
                     if (empty($msgid)) {
                         $msgid = uniqid($taskInfo['taskName'], TRUE);
                     }
-//                    $msgRes = MsgDao::getInstance()->add([
-//                        'msgid' => $msgid,
-//                        'payload' => $payload,
-//                        'ctime' => date('Y-m-d H:i:s'),
-//                        'status' => 0
-//                    ]);
+                    $msgRes = MsgDao::getInstance()->add([
+                        'msgid' => $msgid,
+                        'payload' => $payload,
+                        'ctime' => date('Y-m-d H:i:s'),
+                        'status' => 0
+                    ]);
                     $msgRes = 1;
                     if ($msgRes) {
                         CeleryMqDao::getInstance()->insert(

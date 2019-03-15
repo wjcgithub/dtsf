@@ -36,9 +36,9 @@ class Dao
             if (empty($this->storage[$coId])) {
                 Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请after{$this->waitPoolTime}s", [], 'dbpool');
                 if ($this->waitPoolTime>=3) {
-                    $this->waitPoolTime = 1;
+                    $this->waitPoolTime = 0.5;
                 }
-                \Swoole\Coroutine::sleep($this->waitPoolTime++);
+                \Swoole\Coroutine::sleep($this->waitPoolTime+=0.5);
                 return $this->getDb();
             }else{
                 defer(function () {
@@ -58,11 +58,10 @@ class Dao
     {
         $coId = Coroutine::getId();
         if (!empty($this->storage[$coId])) {
-            echo "test";
             $object = $this->storage[$coId];
             $this->storage[$coId] = null;
             unset($this->storage[$coId]);
-            $this->waitPoolTime = 1;
+            $this->waitPoolTime = 0.5;
             $pool = PoolManager::getInstance()->getPool(Config::get($this->daoType . '.' . $this->connection . '.class'));
             $pool->recycleObj($object);
             unset($object);

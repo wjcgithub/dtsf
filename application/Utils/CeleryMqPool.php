@@ -16,8 +16,6 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class CeleryMqPool extends AbstractPool
 {
-    private $mqConfirmLogDir = 'mq_confirm_log';
-
     /**
      * 请在此处返回一个数据库链接实例
      * @return MysqlObject
@@ -33,10 +31,13 @@ class CeleryMqPool extends AbstractPool
             $config['exchange'],
             '',
             $config['port'],
-            [$this, 'ack'],
-            [$this, 'nack'],
-            [$this, 'returnMsg'],
-            'php-amqplib'
+            __NAMESPACE__.'\MqConfirm::ack',
+            __NAMESPACE__.'\MqConfirm::nack',
+            __NAMESPACE__.'\MqConfirm::returnMsg',
+            'php-amqplib',
+            false,
+            $config['connection_timeout'],
+            $config['read_write_timeout']
         );
         $obj->objectName = uniqid();
         return $obj;
@@ -45,24 +46,5 @@ class CeleryMqPool extends AbstractPool
     public function getLength()
     {
         return $this->chan->length();
-    }
-
-    public function ack(AMQPMessage $message)
-    {
-        MsgDao::getCoInstance()->update([
-            'status' => 1,
-        ], "msgid='{$message->get_properties()['reply_to']}'");
-    }
-
-    public function nack(AMQPMessage $message)
-    {
-        $msg = "\r\n nack ok " . $message->get_properties()['reply_to'] . " \r\n";
-        Log::error($msg, [], $this->mqConfirmLogDir);
-    }
-
-    public function returnMsg($params)
-    {
-        $msg = "\r\n return" . json_encode($params) . " \r\n";
-        Log::error($msg, [], $this->mqConfirmLogDir);
     }
 }

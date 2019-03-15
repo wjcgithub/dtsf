@@ -30,7 +30,6 @@ class ApiController extends Controller
             return ApiValidate::getInstance()->getError()->__toString();
         }
         $cmsg = posix_getpid() . ' i am message (' . uniqid(time() . random_int(1, 10000), true) . ')-> ' . $i++;
-//        echo "\r\n".$cmsg."\r\n";
         return ApiService::getInstance()->PostTask('',$this->data['messageno'],$cmsg);
     }
 
