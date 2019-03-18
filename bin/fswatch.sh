@@ -1,8 +1,11 @@
 #!/bin/bash
-DIR=`pwd`
+DIR=$(cd `dirname $0`; pwd)
 checkExt=php
-fswatch $DIR/.. | while read file
+checkTplExt=twig
+echo `dirname $DIR`
+fswatch `dirname $DIR` | while read file
 do
+    echo $file
     filename=$(basename "$file")
     extension="${filename##*.}"
     #php文件改动，则reload
@@ -10,5 +13,10 @@ do
         #reload代码
         $DIR/family.sh reload
     fi
-done
 
+    #模板文件改动，则reload
+    if [ "$extension" == "$checkTplExt" ];then
+        #reload代码
+        $DIR/family.sh reload
+    fi
+done
