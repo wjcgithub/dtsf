@@ -190,10 +190,10 @@ class ApiService extends AbstractService
     {
         $cacheValueArr = [];
         $taskInfo = $this->fetchTaskInfo($tid);
-        $where = "id = '{$taskInfo->queueid}'";
-        $fields = 'name';
-        $queueInfo = QueueDao::getInstance()->fetchEntity($where, $fields);
         if (!empty($taskInfo)) {
+            $where = "id = '{$taskInfo->queueid}'";
+            $fields = 'name';
+            $queueInfo = QueueDao::getInstance()->fetchEntity($where, $fields);
             $cacheValueArr['queueName'] = 'group' . $taskInfo->groupid . '_' . $queueInfo->name;
             $cacheValueArr['taskName'] = $queueInfo->name . '.task.handler';
             $cacheValueArr['callback_url'] = $taskInfo->callback_url;

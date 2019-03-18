@@ -12,6 +12,7 @@ use App\Dao\MsgDao;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use EasySwoole\Component\Pool\AbstractPool;
+use EasySwoole\Component\Pool\PoolObjectInterface;
 use PhpAmqpLib\Message\AMQPMessage;
 
 class CeleryMqPool extends AbstractPool
@@ -20,7 +21,7 @@ class CeleryMqPool extends AbstractPool
      * 请在此处返回一个数据库链接实例
      * @return MysqlObject
      */
-    protected function createObject()
+    protected function createObject(): PoolObjectInterface
     {
         $config = Config::get('celery.default');
         $obj = new CeleryMqObject(
