@@ -6,11 +6,11 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'AsyncResult' => $vendorDir . '/massivescale/celery-php/celery.php',
-    'Celery' => $vendorDir . '/massivescale/celery-php/celery.php',
-    'CeleryAbstract' => $vendorDir . '/massivescale/celery-php/celery.php',
-    'CeleryAdvanced' => $vendorDir . '/massivescale/celery-php/celery.php',
-    'CeleryException' => $vendorDir . '/massivescale/celery-php/celery.php',
-    'CeleryPublishException' => $vendorDir . '/massivescale/celery-php/celery.php',
-    'CeleryTimeoutException' => $vendorDir . '/massivescale/celery-php/celery.php',
+    'AsyncResult' => $vendorDir . '/wangjichao/swoole-celery/celery.php',
+    'Celery' => $vendorDir . '/wangjichao/swoole-celery/celery.php',
+    'CeleryAbstract' => $vendorDir . '/wangjichao/swoole-celery/celery.php',
+    'CeleryAdvanced' => $vendorDir . '/wangjichao/swoole-celery/celery.php',
+    'CeleryException' => $vendorDir . '/wangjichao/swoole-celery/celery.php',
+    'CeleryPublishException' => $vendorDir . '/wangjichao/swoole-celery/celery.php',
+    'CeleryTimeoutException' => $vendorDir . '/wangjichao/swoole-celery/celery.php',
 );

@@ -1,0 +1,38 @@
+{
+    "name": "wangjichao/swoole-celery",
+    "type": "library",
+    "description": "PHP client for Celery task queue base swoole ext by memory-resident, and edit by gjedeer/celery-php",
+    "keywords": ["celery", "amqp", "task", "python", "queue", "redis", "swoole"],
+    "homepage": "https://github.com/wjcgithub/swoole-celery",
+    "support": {
+	"issues": "https://github.com/wjcgithub/swoole-celery/issues",
+	"docs": "https://github.com/wjcgithub/swoole-celery/"
+    },
+    "license": "BSD-2-Clause",
+    "authors": [
+        {
+            "name": "wangjichao",
+            "email": "wjc163@sina.cn",
+            "homepage": "https://blog.csdn.net/wjc19911118",
+            "role": "Developer"
+        }
+    ],
+    "suggest": {
+	"php-amqplib/php-amqplib": "Adds support for the php-amqplib, AMQP library for PHP, backend",
+        "predis/predis": "Adds support for the predis, PHP client library for Redis, backend"
+    },
+    "autoload": {
+        "classmap": ["celery.php"]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.2-dev"
+        }
+    },
+    "require": {
+        "php-amqplib/php-amqplib": "^2.6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.8"
+    }
+}

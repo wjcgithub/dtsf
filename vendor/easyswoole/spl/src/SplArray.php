@@ -69,7 +69,30 @@ class SplArray extends \ArrayObject
             if(isset($data[$key])){
                 $data = $data[$key];
             }else{
-                return null;
+                if($key == '*'){
+                    $temp = [];
+                    if(is_array($data)){
+                        if(!empty($paths)){
+                            $path = implode("/",$paths);
+                        }else{
+                            $path = null;
+                        }
+                        foreach ($data as $key => $datum){
+                            if(is_array($datum)){
+                                $ctemp = (new SplArray($datum))->get($path);
+                                if($ctemp !== null){
+                                    $temp[][$path] = $ctemp;
+                                }
+                            }else if($datum !== null){
+                                $temp[$key] = $datum;
+                            }
+
+                        }
+                    }
+                    return $temp;
+                }else{
+                    return null;
+                }
             }
         }
         return $data;

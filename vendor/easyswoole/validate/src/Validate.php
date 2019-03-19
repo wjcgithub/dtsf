@@ -503,7 +503,7 @@ class Validate
                 return false;
             }
         } else if (is_array($data)) {
-            if (strlen($data) >= $min && strlen($data) <= $max) {
+            if (count($data) >= $min && count($data) <= $max) {
                 return true;
             } else {
                 return false;
@@ -514,7 +514,7 @@ class Validate
     }
 
     /**
-     * 验证值不大于(相等视为不通过)
+     * 验证值不大于(相等视为通过)
      * @param SplArray $splArray
      * @param string $column
      * @param $arg
@@ -525,8 +525,8 @@ class Validate
         if (!$this->numeric($splArray, $column, $arg)) {
             return false;
         }
-        $data = $splArray->get($column);
-        if (intval($data) > $arg) {
+        $data = $splArray->get($column) * 1;
+        if ($data > $arg) {
             return false;
         }
         return true;
@@ -548,7 +548,7 @@ class Validate
     }
 
     /**
-     * 验证值不小于(相等视为不通过)
+     * 验证值不小于(相等视为通过)
      * @param SplArray $splArray
      * @param string $column
      * @param $arg
@@ -559,8 +559,8 @@ class Validate
         if (!$this->numeric($splArray, $column, $arg)) {
             return false;
         }
-        $data = $splArray->get($column);
-        if (intval($data) < $arg) {
+        $data = $splArray->get($column) * 1;
+        if ($data < $arg) {
             return false;
         }
         return true;

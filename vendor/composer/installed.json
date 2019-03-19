@@ -1,17 +1,17 @@
 [
     {
         "name": "easyswoole/component",
-        "version": "1.5.3",
-        "version_normalized": "1.5.3.0",
+        "version": "1.5.5",
+        "version_normalized": "1.5.5.0",
         "source": {
             "type": "git",
             "url": "https://github.com/easy-swoole/component.git",
-            "reference": "ad3deffab4fce939a14527737bb2f61b719da5ad"
+            "reference": "2b88da1e80aa52bff883fefb718aa0fd7a63c490"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/component/zipball/ad3deffab4fce939a14527737bb2f61b719da5ad",
-            "reference": "ad3deffab4fce939a14527737bb2f61b719da5ad",
+            "url": "https://api.github.com/repos/easy-swoole/component/zipball/2b88da1e80aa52bff883fefb718aa0fd7a63c490",
+            "reference": "2b88da1e80aa52bff883fefb718aa0fd7a63c490",
             "shasum": ""
         },
         "require": {
@@ -23,7 +23,7 @@
             "easyswoole/phpunit": "^1.0",
             "easyswoole/swoole-ide-helper": "^1.2"
         },
-        "time": "2019-02-24T04:13:06+00:00",
+        "time": "2019-03-19T02:57:33+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -106,26 +106,26 @@
     },
     {
         "name": "easyswoole/mysqli",
-        "version": "1.1.12",
-        "version_normalized": "1.1.12.0",
+        "version": "1.1.14",
+        "version_normalized": "1.1.14.0",
         "source": {
             "type": "git",
             "url": "https://github.com/easy-swoole/mysqli.git",
-            "reference": "2685d19dc59f65c1556ded3310707ad95b363b53"
+            "reference": "958f8fe4168d4cc3a534f7a3871d787fd5ea0ca0"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/mysqli/zipball/2685d19dc59f65c1556ded3310707ad95b363b53",
-            "reference": "2685d19dc59f65c1556ded3310707ad95b363b53",
+            "url": "https://api.github.com/repos/easy-swoole/mysqli/zipball/958f8fe4168d4cc3a534f7a3871d787fd5ea0ca0",
+            "reference": "958f8fe4168d4cc3a534f7a3871d787fd5ea0ca0",
             "shasum": ""
         },
         "require": {
             "easyswoole/spl": "^1.0"
         },
         "require-dev": {
-            "easyswoole/swoole-ide-helper": "dev-master"
+            "easyswoole/swoole-ide-helper": "^1.2"
         },
-        "time": "2019-01-26T03:46:32+00:00",
+        "time": "2019-03-12T12:51:53+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -154,23 +154,23 @@
     },
     {
         "name": "easyswoole/spl",
-        "version": "1.1.6",
-        "version_normalized": "1.1.6.0",
+        "version": "1.1.9",
+        "version_normalized": "1.1.9.0",
         "source": {
             "type": "git",
             "url": "https://github.com/easy-swoole/spl.git",
-            "reference": "b0a9a8ec4c7de106382af4d1e155e66b305beece"
+            "reference": "2848daa67a4c10315263336191883ffadaf72bed"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/spl/zipball/b0a9a8ec4c7de106382af4d1e155e66b305beece",
-            "reference": "b0a9a8ec4c7de106382af4d1e155e66b305beece",
+            "url": "https://api.github.com/repos/easy-swoole/spl/zipball/2848daa67a4c10315263336191883ffadaf72bed",
+            "reference": "2848daa67a4c10315263336191883ffadaf72bed",
             "shasum": ""
         },
         "require": {
             "php": ">=7.1.0"
         },
-        "time": "2018-12-30T12:13:03+00:00",
+        "time": "2019-03-15T16:40:52+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -199,23 +199,23 @@
     },
     {
         "name": "easyswoole/utility",
-        "version": "1.0.8",
-        "version_normalized": "1.0.8.0",
+        "version": "1.0.9",
+        "version_normalized": "1.0.9.0",
         "source": {
             "type": "git",
             "url": "https://github.com/easy-swoole/utility.git",
-            "reference": "99ce99441d0e54bb62c82feeefbbe45207ed32b6"
+            "reference": "11bf7d3604fc2bf1753354e5f6cf30417fcdf39b"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/utility/zipball/99ce99441d0e54bb62c82feeefbbe45207ed32b6",
-            "reference": "99ce99441d0e54bb62c82feeefbbe45207ed32b6",
+            "url": "https://api.github.com/repos/easy-swoole/utility/zipball/11bf7d3604fc2bf1753354e5f6cf30417fcdf39b",
+            "reference": "11bf7d3604fc2bf1753354e5f6cf30417fcdf39b",
             "shasum": ""
         },
         "require": {
             "php": ">=7.1.0"
         },
-        "time": "2019-03-01T03:05:13+00:00",
+        "time": "2019-03-07T07:14:29+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -237,17 +237,17 @@
     },
     {
         "name": "easyswoole/validate",
-        "version": "1.1.5",
-        "version_normalized": "1.1.5.0",
+        "version": "1.1.6",
+        "version_normalized": "1.1.6.0",
         "source": {
             "type": "git",
             "url": "https://github.com/easy-swoole/validate.git",
-            "reference": "b11e16c8dc5b7f83cfedffff6e3cf43fad4e7af6"
+            "reference": "0e25c36798a6fa3d982bbe2a444c444145400dd0"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/easy-swoole/validate/zipball/b11e16c8dc5b7f83cfedffff6e3cf43fad4e7af6",
-            "reference": "b11e16c8dc5b7f83cfedffff6e3cf43fad4e7af6",
+            "url": "https://api.github.com/repos/easy-swoole/validate/zipball/0e25c36798a6fa3d982bbe2a444c444145400dd0",
+            "reference": "0e25c36798a6fa3d982bbe2a444c444145400dd0",
             "shasum": ""
         },
         "require": {
@@ -257,7 +257,7 @@
         "require-dev": {
             "phpunit/phpunit": "^7.4"
         },
-        "time": "2019-01-12T09:53:05+00:00",
+        "time": "2019-03-12T03:12:28+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -342,68 +342,6 @@
             "xml",
             "yaml",
             "yml"
-        ]
-    },
-    {
-        "name": "massivescale/celery-php",
-        "version": "dev-celery4",
-        "version_normalized": "dev-celery4",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/gjedeer/celery-php.git",
-            "reference": "acc1ff548b1063b321c2c3303359adbdc281a3f0"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/gjedeer/celery-php/zipball/acc1ff548b1063b321c2c3303359adbdc281a3f0",
-            "reference": "acc1ff548b1063b321c2c3303359adbdc281a3f0",
-            "shasum": ""
-        },
-        "require": {
-            "php-amqplib/php-amqplib": "^2.6"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "^4.8"
-        },
-        "suggest": {
-            "php-amqplib/php-amqplib": "Adds support for the php-amqplib, AMQP library for PHP, backend",
-            "predis/predis": "Adds support for the predis, PHP client library for Redis, backend"
-        },
-        "time": "2017-12-27T09:08:44+00:00",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "2.2-dev"
-            }
-        },
-        "installation-source": "source",
-        "autoload": {
-            "classmap": [
-                "celery.php"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-2-Clause"
-        ],
-        "authors": [
-            {
-                "name": "GDR!",
-                "email": "info@massivescale.net",
-                "homepage": "http://massivescale.net/",
-                "role": "Developer"
-            }
-        ],
-        "description": "PHP client for Celery task queue",
-        "homepage": "https://github.com/gjedeer/celery-php/",
-        "keywords": [
-            "AMQP",
-            "celery",
-            "cron",
-            "python",
-            "queue",
-            "redis",
-            "task"
         ]
     },
     {
@@ -498,17 +436,17 @@
     },
     {
         "name": "paragonie/easydb",
-        "version": "v2.8.0",
-        "version_normalized": "2.8.0.0",
+        "version": "v2.9.0",
+        "version_normalized": "2.9.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/paragonie/easydb.git",
-            "reference": "daeaac952ba5f036a520b31d87b089679f09ae24"
+            "reference": "67ee07647f0836d98b31281ea18baf5725627347"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/paragonie/easydb/zipball/daeaac952ba5f036a520b31d87b089679f09ae24",
-            "reference": "daeaac952ba5f036a520b31d87b089679f09ae24",
+            "url": "https://api.github.com/repos/paragonie/easydb/zipball/67ee07647f0836d98b31281ea18baf5725627347",
+            "reference": "67ee07647f0836d98b31281ea18baf5725627347",
             "shasum": ""
         },
         "require": {
@@ -521,7 +459,7 @@
             "squizlabs/php_codesniffer": "^2.7",
             "vimeo/psalm": "^1|^2"
         },
-        "time": "2019-01-03T20:31:26+00:00",
+        "time": "2019-03-12T14:18:08+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -632,6 +570,68 @@
             "message",
             "queue",
             "rabbitmq"
+        ]
+    },
+    {
+        "name": "wangjichao/swoole-celery",
+        "version": "1.0",
+        "version_normalized": "1.0.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/wjcgithub/swoole-celery.git",
+            "reference": "52d1ce91472f3d9d315c61a81d74dda13366b1ef"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/wjcgithub/swoole-celery/zipball/52d1ce91472f3d9d315c61a81d74dda13366b1ef",
+            "reference": "52d1ce91472f3d9d315c61a81d74dda13366b1ef",
+            "shasum": ""
+        },
+        "require": {
+            "php-amqplib/php-amqplib": "^2.6"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "^4.8"
+        },
+        "suggest": {
+            "php-amqplib/php-amqplib": "Adds support for the php-amqplib, AMQP library for PHP, backend",
+            "predis/predis": "Adds support for the predis, PHP client library for Redis, backend"
+        },
+        "time": "2019-03-19T07:22:53+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.2-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                "celery.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-2-Clause"
+        ],
+        "authors": [
+            {
+                "name": "wangjichao",
+                "email": "wjc163@sina.cn",
+                "homepage": "https://blog.csdn.net/wjc19911118",
+                "role": "Developer"
+            }
+        ],
+        "description": "PHP client for Celery task queue base swoole ext by memory-resident, and edit by gjedeer/celery-php",
+        "homepage": "https://github.com/wjcgithub/swoole-celery",
+        "keywords": [
+            "AMQP",
+            "celery",
+            "python",
+            "queue",
+            "redis",
+            "swoole",
+            "task"
         ]
     }
 ]

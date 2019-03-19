@@ -105,13 +105,13 @@ class ComposerStaticInitc53f4845bef2fd032e07990c1b5ab99e
     );
 
     public static $classMap = array (
-        'AsyncResult' => __DIR__ . '/..' . '/massivescale/celery-php/celery.php',
-        'Celery' => __DIR__ . '/..' . '/massivescale/celery-php/celery.php',
-        'CeleryAbstract' => __DIR__ . '/..' . '/massivescale/celery-php/celery.php',
-        'CeleryAdvanced' => __DIR__ . '/..' . '/massivescale/celery-php/celery.php',
-        'CeleryException' => __DIR__ . '/..' . '/massivescale/celery-php/celery.php',
-        'CeleryPublishException' => __DIR__ . '/..' . '/massivescale/celery-php/celery.php',
-        'CeleryTimeoutException' => __DIR__ . '/..' . '/massivescale/celery-php/celery.php',
+        'AsyncResult' => __DIR__ . '/..' . '/wangjichao/swoole-celery/celery.php',
+        'Celery' => __DIR__ . '/..' . '/wangjichao/swoole-celery/celery.php',
+        'CeleryAbstract' => __DIR__ . '/..' . '/wangjichao/swoole-celery/celery.php',
+        'CeleryAdvanced' => __DIR__ . '/..' . '/wangjichao/swoole-celery/celery.php',
+        'CeleryException' => __DIR__ . '/..' . '/wangjichao/swoole-celery/celery.php',
+        'CeleryPublishException' => __DIR__ . '/..' . '/wangjichao/swoole-celery/celery.php',
+        'CeleryTimeoutException' => __DIR__ . '/..' . '/wangjichao/swoole-celery/celery.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
