@@ -1,5 +1,5 @@
 {
-    "name": "evolution/dtsf",
+    "name": "wangjichao/dtsf",
     "description": "dtsf is a  php framework base swoole",
     "type": "project",
     "license": "apache",
@@ -18,7 +18,7 @@
         "easyswoole/mysqli": "^1.1",
         "hassankhan/config": "^2.0",
         "paragonie/easydb": "^2",
-        "massivescale/celery-php": "dev-celery4",
+        "wangjichao/swoole-celery": "*",
         "php-amqplib/php-amqplib": "^2.8"
     },
     "autoload": {
