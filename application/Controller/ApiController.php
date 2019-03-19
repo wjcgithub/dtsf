@@ -20,7 +20,6 @@ class ApiController extends Controller
      */
     public function PostTask()
     {
-
         if (!ApiValidate::getInstance()->PostTaskValidate($this->data)) {
             return ApiValidate::getInstance()->getError()->__toString();
         }
