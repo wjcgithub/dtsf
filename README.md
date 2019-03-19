@@ -19,7 +19,7 @@ bin/dtsf.sh reload   重启worker
 ```
 
 ### 代码测试
-Redis协程测试
+Redis协程测试, 测试代码如下
 ```php
 $result = '';
 $redis = RedisDefaultDao::getInstance();
@@ -42,3 +42,6 @@ Coroutine::sleep(1);
 
 return "redis->end output <br> {$result}" . PHP_EOL;
 ```
+
+上面代码已经在控制器中存在,直接访问 http://localhost:9501/redis/test即可看到如下输出
+![redis](redis.png)
