@@ -20,7 +20,11 @@ class Log
     {
         if (class_exists('SeasLog')) {
             self::$seaslog = true;
-            SeasLog::setBasePath(Dtsf::$applicationPath . DS . 'Log');
+            $logBasePath = rtrim(Dtsf::$applicationPath, '/');
+            if (!empty(Config::get('log_dir'))) {
+                $logBasePath = rtrim(Config::get('log_dir'), '/');
+            }
+            SeasLog::setBasePath($logBasePath . DS . 'Log');
         }
     }
 

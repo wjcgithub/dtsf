@@ -14,4 +14,5 @@ return [
         'max_wait_time' => 30,
         'daemonize' => 0, //是否开启守护进程
     ],
+    'log_dir' => '/tmp'
 ];
