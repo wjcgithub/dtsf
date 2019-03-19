@@ -57,7 +57,7 @@ class MainService
     {
         $this->mainServer = new \Swoole\Http\Server(Config::get('host'), Config::get('port'));
         $serverConfig = Config::get('swoole_setting');
-        $logBasePath = rtrim(Dtsf::$applicationPath, '/');
+        $logBasePath = rtrim(Dtsf::$applicationLogPath, '/');
         if (!empty(Config::get('log_dir'))) {
             $logBasePath = rtrim(Config::get('log_dir'), '/');
         }
