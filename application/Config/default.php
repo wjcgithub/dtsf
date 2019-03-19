@@ -12,7 +12,7 @@ return [
         'reload_async' => true,
         'log_file' => 'swoole_error_log.log',
         'max_wait_time' => 30,
-        'daemonize' => 0, //是否开启守护进程
+        'daemonize' => 1, //是否开启守护进程
     ],
-    'log_dir' => '/tmp'
+    'log_dir' => ''
 ];
