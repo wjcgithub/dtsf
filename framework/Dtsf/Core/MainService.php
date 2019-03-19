@@ -15,6 +15,7 @@ class MainService
 {
     use Singleton;
 
+    private $mainServer = null;
     private $hotReloadWatchDescriptor = null;
 
     /**
@@ -29,11 +30,9 @@ class MainService
     }
 
     /**
-     * 初始化server并返回http实例
-     *
-     * @return \Swoole\Http\Server
+     * 初始化服务配置
      */
-    public function serverStartBefore()
+    public function initService()
     {
         \Swoole\Runtime::enableCoroutine();
         if (!defined('DS')) {
@@ -42,13 +41,35 @@ class MainService
         Dtsf::$rootPath = dirname(dirname(dirname(__DIR__)));
         Dtsf::$frameworkPath = Dtsf::$rootPath . DS . 'framework';
         Dtsf::$applicationPath = Dtsf::$rootPath . DS . 'application';
+        Dtsf::$applicationLogPath = Dtsf::$applicationPath . DS . 'Log';
         //加载框架的基础配置
         Config::load();
         $timeZone = Config::get('time_zone', 'Asia/Shanghai');
         \date_default_timezone_set($timeZone);
-        $http = new \Swoole\Http\Server(Config::get('host'), Config::get('port'));
-        $http->set(Config::get('swoole_setting'));
-        return $http;
+    }
+
+    /**
+     * 初始化server并返回http实例
+     *
+     * @return null|\Swoole\Http\Server
+     */
+    public function createMainService(): \Swoole\Http\Server
+    {
+        $this->mainServer = new \Swoole\Http\Server(Config::get('host'), Config::get('port'));
+        $serverConfig = Config::get('swoole_setting');
+        $serverConfig['log_file'] = Dtsf::$applicationLogPath . DS . $serverConfig['log_file'];
+        $this->mainServer->set($serverConfig);
+        return $this->mainServer;
+    }
+
+    /**
+     * 获取主服务名称
+     *
+     * @return null
+     */
+    public function getMainServer()
+    {
+        return $this->mainServer;
     }
 
     /**
@@ -93,8 +114,8 @@ class MainService
         //创建一个inotify句柄
         $fd = inotify_init();
 
-        $this->hotReloadWatchDescriptor = inotify_add_watch($fd, Dtsf::$applicationPath.'/',
-            IN_MODIFY|IN_MOVED_FROM|IN_MOVED_TO|IN_CREATE|IN_DELETE|IN_DELETE_SELF|IN_ATTRIB);
+        $this->hotReloadWatchDescriptor = inotify_add_watch($fd, Dtsf::$applicationPath . '/',
+            IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_ATTRIB);
         swoole_event_add($fd, function ($fd) {
             $events = inotify_read($fd);
             if ($events) {

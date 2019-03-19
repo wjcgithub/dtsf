@@ -13,6 +13,7 @@ class Dtsf
     public static $rootPath;
     public static $frameworkPath;
     public static $applicationPath;
+    public static $applicationLogPath;
 
     /**
      * start application
@@ -20,13 +21,14 @@ class Dtsf
     final public static function run()
     {
         try {
-            $http = MainService::getInstance()->serverStartBefore();
+            MainService::getInstance()->initService();
+            $http = MainService::getInstance()->createMainService();
             $http->on('start', function (Swoole\Http\Server $serv) {
                 MainService::getInstance()->serverStart($serv);
             });
 
             $http->on('managerStart', function (Swoole\Http\Server $serv) {
-                $serverName = Config::get('server_name').".manager";
+                $serverName = Config::get('server_name') . ".manager";
                 MainService::getInstance()->setProcessName($serverName);
             });
 
@@ -56,11 +58,9 @@ class Dtsf
 
             $http->start();
         } catch (\Exception $e) {
-            print_r($e->getMessage());
-            Log::info("server exception, trace is.".$e->getTraceAsString(), [], 'error');
+            Log::info("server exception, trace is." . $e->getTraceAsString(), [], 'error');
         } catch (\Throwable $e) {
-            print_r($e->getMessage());
-            Log::info("server Throwable, trace is.".$e->getTraceAsString(), [], 'error');
+            Log::info("server Throwable, trace is." . $e->getTraceAsString(), [], 'error');
         }
     }
 }

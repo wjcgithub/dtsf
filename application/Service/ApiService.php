@@ -17,13 +17,9 @@ use App\Dao\RedisDefaultDao;
 use App\Dao\TasksDao;
 use App\Entity\Result;
 use App\Exceptions\InsertMsgToDbException;
-use CeleryException;
 use Dtsf\Core\Log;
 use Dtsf\Core\WorkerApp;
 use Dtsf\Db\Redis\DtRedisReException;
-use PhpAmqpLib\Exception\AMQPExceptionInterface;
-use PhpAmqpLib\Exception\AMQPIOWaitException;
-use PhpAmqpLib\Exception\AMQPTimeoutException;
 
 class ApiService extends AbstractService
 {
@@ -77,23 +73,29 @@ class ApiService extends AbstractService
                     if (empty($msgid)) {
                         $msgid = uniqid($taskInfo['taskName'], TRUE);
                     }
-                    $msgRes = MsgDao::getInstance()->add([
-                        'msgid' => $msgid,
-                        'payload' => $payload,
-                        'ctime' => date('Y-m-d H:i:s'),
-                        'status' => 0
-                    ]);
-                    $msgRes = 1;
-                    if ($msgRes) {
-                        CeleryMqDao::getInstance()->insert(
-                            $msgid,
-                            $taskInfo['taskName'],
-                            ['payload' => json_encode($payload)],
-                            $taskInfo['queueName']
-                        );
-                    }else{
-                        throw new InsertMsgToDbException('insert msg to db error');
-                    }
+//                    $msgRes = MsgDao::getInstance()->add([
+//                        'msgid' => $msgid,
+//                        'payload' => $payload,
+//                        'ctime' => date('Y-m-d H:i:s'),
+//                        'status' => 0
+//                    ]);
+//                    $msgRes = 1;
+//                    if ($msgRes) {
+//                        CeleryMqDao::getInstance()->insert(
+//                            $msgid,
+//                            $taskInfo['taskName'],
+//                            ['payload' => json_encode($payload)],
+//                            $taskInfo['queueName']
+//                        );
+//                    } else {
+//                        throw new InsertMsgToDbException('insert msg to db error');
+//                    }
+                    CeleryMqDao::getInstance()->insert(
+                        $msgid,
+                        $taskInfo['taskName'],
+                        ['payload' => json_encode($payload)],
+                        $taskInfo['queueName']
+                    );
                 } catch (\InvalidArgumentException $e) {
                     $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
                     Log::error($msg, [], $this->dtqProducerErrorLog);
@@ -118,16 +120,16 @@ class ApiService extends AbstractService
             $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
             Log::error($msg, [], $this->dtqProducerErrorLog);
             $result->setCode(Result::CODE_ERROR)->setMsg($e->getMessage());
-        } catch (\Exception $e) {
-            $this->performExcepiton($e, $msgid, $tid, $payload, $result);
-            $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile() . '---line' . $e->getLine();
-            $result->setCode(Result::CODE_ERROR)->setMsg('操作失败');
-            Log::error($msg, [], $this->dtqProducerErrorLog);
-        } catch (\Swoole\ExitException $e) {
+        }catch (\Swoole\ExitException $e) {
             $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile()
                 . '---line' . $e->getLine() . '---swoole-status' . $e->getStatus() . '---swoole-flags' . $e->getFlags();
             Log::error($msg, [], $this->dtqProducerErrorLog);
             $result->setCode(Result::CODE_ERROR)->setMsg('操作失败');
+        }  catch (\Exception $e) {
+            $this->performExcepiton($e, $msgid, $tid, $payload, $result);
+            $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile() . '---line' . $e->getLine();
+            $result->setCode(Result::CODE_ERROR)->setMsg('操作失败');
+            Log::error($msg, [], $this->dtqProducerErrorLog);
         } catch (\Throwable $throwable) {
             Log::error("{worker_id} post to mq error, and current app status is {status}, msg: {msg}."
                 , [
@@ -253,12 +255,6 @@ class ApiService extends AbstractService
             $errorParam['ctime'] = date('Y-m-d H:i:s');
             ProducerErrorMsgDao::getCoInstance()->add($errorParam);
         } catch (\Exception $e) {
-            $userName = 'wangjichao';
-            $msg1 = '生产者发生严重错误';
-            $msg2 = '生产者发生严重错误';
-            $msg3 = '投递的消息写入rabbitmq失败后存储到mysql也失败了，需要手动从日志中恢复（dtq_producer_to_rabbitmq_error.log）！';
-            $msg4 = '投递的消息写入rabbitmq失败后存储到mysql也失败了，需要手动从日志中恢复（dtq_producer_to_rabbitmq_error.log）！';
-            CommonService::getInstance()->weixinNotice($userName, $msg1, $msg2, $msg3, $msg4);
             Log::error('保存投递失败消息失败----msg' . $e->getMessage() . "--body:" . json_encode($errorParam), [], $this->dtqProducerToRabbitmqErrorLog);
         }
 

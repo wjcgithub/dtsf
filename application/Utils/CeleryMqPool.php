@@ -8,12 +8,9 @@
 
 namespace App\Utils;
 
-use App\Dao\MsgDao;
 use Dtsf\Core\Config;
-use Dtsf\Core\Log;
 use EasySwoole\Component\Pool\AbstractPool;
 use EasySwoole\Component\Pool\PoolObjectInterface;
-use PhpAmqpLib\Message\AMQPMessage;
 
 class CeleryMqPool extends AbstractPool
 {
@@ -32,9 +29,12 @@ class CeleryMqPool extends AbstractPool
             $config['exchange'],
             '',
             $config['port'],
-            __NAMESPACE__.'\MqConfirm::ack',
-            __NAMESPACE__.'\MqConfirm::nack',
-            __NAMESPACE__.'\MqConfirm::returnMsg',
+            [],
+            [],
+            [],
+//            __NAMESPACE__.'\MqConfirm::ack',
+//            __NAMESPACE__.'\MqConfirm::nack',
+//            __NAMESPACE__.'\MqConfirm::returnMsg',
             'php-amqplib',
             false,
             $config['connection_timeout'],

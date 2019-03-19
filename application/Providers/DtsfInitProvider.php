@@ -141,12 +141,12 @@ class DtsfInitProvider
             Log::info(
                 "\r\n协程情况" . json_encode($croStat)
                 , [], 'coroutine_info');
-            if($croStat['coroutine_num'] == 1) {
+            if ($croStat['coroutine_num'] == 1) {
                 $coros = \Swoole\Coroutine::listCoroutines();
                 foreach ($coros as $cid) {
                     Log::info(
                         "pid:{pid} 协程具体情况" . json_encode(\Swoole\Coroutine::getBackTrace($cid))
-                        , ['{pid}'=>posix_getpid()], 'coroutine_info');
+                        , ['{pid}' => posix_getpid()], 'coroutine_info');
                 }
             }
 

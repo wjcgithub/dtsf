@@ -16,13 +16,14 @@ use EasySwoole\Component\Pool\PoolObjectInterface;
 class CeleryMqObject extends \Celery implements PoolObjectInterface
 {
     public $objectName = '';
+
     public function gc()
     {
         Log::debug("obj {obj} of worker {worker_id} start execting celeryMq gc, and current app status is {status}."
             , [
                 '{obj}' => $this->objectName,
                 '{worker_id}' => posix_getppid(),
-                '{status}'=>WorkerApp::getInstance()->serverStatus
+                '{status}' => WorkerApp::getInstance()->serverStatus
             ]
             , WorkerApp::getInstance()->debugDirName);
         $this->recycleLastAck();
