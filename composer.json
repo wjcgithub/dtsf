@@ -1,12 +1,12 @@
 {
-    "name": "evolution/swoole",
-    "description": "ddf is a dtq framework",
+    "name": "evolution/dtsf",
+    "description": "dtsf is a  php framework base swoole",
     "type": "project",
     "license": "apache",
     "authors": [
         {
             "name": "wangjichao",
-            "email": "wangjichao@xin.com"
+            "email": "wjc163@sina.cn"
         }
     ],
     "require": {
