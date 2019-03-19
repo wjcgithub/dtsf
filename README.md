@@ -10,7 +10,7 @@ composer install
 ```
 
 
-###启动
+### 启动
 ```php
 bin/dtsf.sh start  开启
 bin/dtsf.sh stop   停止
@@ -18,7 +18,7 @@ bin/dtsf.sh restart   重启
 bin/dtsf.sh reload   重启worker
 ```
 
-###代码测试
+### 代码测试
 Redis协程测试
 ```php
 $result = '';
