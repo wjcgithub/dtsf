@@ -4,3 +4,4 @@ composer.lock
 /bin/*.pid
 /bin/*.service
 /vendor/massivescale/celery-php
+/core.*
