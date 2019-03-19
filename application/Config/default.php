@@ -14,6 +14,6 @@ return [
         'max_wait_time' => 60,
 //        'heartbeat_idle_time' => 600,
 //        'heartbeat_check_interval' => 60,
-        'daemonize' => 1,               //是否开启守护进程
-    ]
+        'daemonize' => 0,               //是否开启守护进程
+    ],
 ];

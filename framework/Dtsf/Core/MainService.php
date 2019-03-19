@@ -15,6 +15,8 @@ class MainService
 {
     use Singleton;
 
+    private $hotReloadWatchDescriptor = null;
+
     /**
      * 设置服务名称
      * @param $serverName
@@ -69,6 +71,10 @@ class MainService
             '{masterId}' => $serv->master_pid,
             '{managerId}' => $serv->manager_pid,
         ], 'start');
+
+        if (Config::get('enableHotReload')) {
+            $this->enableHotReload();
+        }
     }
 
     /**
@@ -77,5 +83,25 @@ class MainService
     public function serverExit()
     {
         Log::info("http server shutdown", [], 'shutdown');
+    }
+
+    /**
+     * 热加载
+     */
+    public function enableHotReload()
+    {
+        //创建一个inotify句柄
+        $fd = inotify_init();
+
+        $this->hotReloadWatchDescriptor = inotify_add_watch($fd, Dtsf::$applicationPath.'/',
+            IN_MODIFY|IN_MOVED_FROM|IN_MOVED_TO|IN_CREATE|IN_DELETE|IN_DELETE_SELF|IN_ATTRIB);
+        swoole_event_add($fd, function ($fd) {
+            $events = inotify_read($fd);
+            if ($events) {
+                foreach ($events as $event) {
+                    echo "inotify Event :" . var_export($event, 1) . "\n";
+                }
+            }
+        });
     }
 }

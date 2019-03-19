@@ -2,12 +2,13 @@
 DIR=$(cd `dirname $0`; pwd)
 checkExt=php
 checkTplExt=twig
-echo `dirname $DIR`
+echo `dirname $DIR`"1---------"
 fswatch `dirname $DIR` | while read file
 do
-    echo $file
+    echo $file"2---------"
     filename=$(basename "$file")
     extension="${filename##*.}"
+    echo $extension"3---------"
     #php文件改动，则reload
     if [ "$extension" == "$checkExt" ];then
         #reload代码
