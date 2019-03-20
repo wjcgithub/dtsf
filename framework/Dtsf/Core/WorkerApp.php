@@ -93,6 +93,7 @@ class WorkerApp extends WorkerBase
         Coroutine::setBaseId();
         //初始化上下文
         $context = new Context($request, $response);
+        $this->recordAccessLog($context->getRequest());
         $context->set('serv', $http);
         //存放到容器pool
         ContextPool::put($context);
@@ -115,5 +116,14 @@ class WorkerApp extends WorkerBase
             Log::exception($e);
             $context->getResponse()->withStatus(500);
         }
+    }
+
+    /**
+     * record log
+     * @param $request
+     */
+    public function recordAccessLog($request)
+    {
+        Log::info("path:".$request->getSwooleRequest()->server['path_info'].'----params:'.json_encode($request->getRequestParam()), [], 'accesslog');
     }
 }
