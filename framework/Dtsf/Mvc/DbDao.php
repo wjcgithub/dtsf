@@ -81,6 +81,9 @@ class DbDao extends Dao
     public function fetchEntity($where = '1', $fields = '*', $orderBy = null)
     {
         $result = $this->fetchArray($where, $fields, $orderBy, 1);
+        echo "22222222222";
+        print_r($where);
+        print_r($result);
         if (!empty($result[0])) {
             return new $this->entity($result[0]);
         }
@@ -129,9 +132,7 @@ class DbDao extends Dao
                 $query .= " limit {$limit}";
             }
 
-//            echo $query;
             $res = $this->getDb()->rawQuery($query);
-//            print_r($res);
             return $res;
         }catch (\Exception $e) {
             print_r($e->getMessage());
