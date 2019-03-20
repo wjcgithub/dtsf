@@ -152,6 +152,8 @@ class ApiService extends AbstractService
             //这里单独链接，是为了设置超时时间，而不影响其他使用者
             $mtid = $this->makeTid($tid);
             //缓存不存在，回写缓存
+            $taskInfo = $this->generateCacheArr($tid);
+            print_r($taskInfo);
             if (empty($taskInfoStr = $redis->get($mtid))) {
                 $taskInfo = $this->generateCacheArr($tid);
                 $taskInfoStr = json_encode($taskInfo);
