@@ -187,21 +187,26 @@ class ApiService extends AbstractService
      */
     private function generateCacheArr($tid)
     {
-        $cacheValueArr = [];
-        $taskInfo = $this->fetchTaskInfo($tid);
-        if (!empty($taskInfo)) {
-            $where = "id = '{$taskInfo->queueid}'";
-            $fields = 'name';
-            $queueInfo = QueueDao::getInstance()->fetchEntity($where, $fields);
-            $cacheValueArr['queueName'] = 'group' . $taskInfo->groupid . '_' . $queueInfo->name;
-            $cacheValueArr['taskName'] = $queueInfo->name . '.task.handler';
-            $cacheValueArr['callback_url'] = $taskInfo->callback_url;
-            $cacheValueArr['type'] = $taskInfo->type;
-            $cacheValueArr['tid'] = $taskInfo->id;
-        } else {
-            throw new \InvalidArgumentException('该任务不存在, 或者已被禁用');
+        try{
+            $cacheValueArr = [];
+            $taskInfo = $this->fetchTaskInfo($tid);
+            if (!empty($taskInfo)) {
+                $where = "id = '{$taskInfo->queueid}'";
+                $fields = 'name';
+                $queueInfo = QueueDao::getInstance()->fetchEntity($where, $fields);
+                $cacheValueArr['queueName'] = 'group' . $taskInfo->groupid . '_' . $queueInfo->name;
+                $cacheValueArr['taskName'] = $queueInfo->name . '.task.handler';
+                $cacheValueArr['callback_url'] = $taskInfo->callback_url;
+                $cacheValueArr['type'] = $taskInfo->type;
+                $cacheValueArr['tid'] = $taskInfo->id;
+            } else {
+                throw new \InvalidArgumentException('该任务不存在, 或者已被禁用');
+            }
+            return $cacheValueArr;
+        }catch (\Exception $e) {
+            print_r($e->getMessage());
         }
-        return $cacheValueArr;
+
     }
 
 
