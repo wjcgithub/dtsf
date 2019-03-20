@@ -93,7 +93,7 @@ class ApiService extends AbstractService
                     CeleryMqDao::getInstance()->insert(
                         $msgid,
                         $taskInfo['taskName'],
-                        ['payload' => json_encode($payload)],
+                        ['payload' => json_encode($paramsArr)],
                         $taskInfo['queueName']
                     );
                 } catch (\InvalidArgumentException $e) {
