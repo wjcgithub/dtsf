@@ -27,6 +27,7 @@ class CeleryMqObject extends \Celery implements PoolObjectInterface
             ]
             , WorkerApp::getInstance()->debugDirName);
         $this->recycleLastAck();
+        $this->disconnect();
     }
 
     public function objectRestore()
