@@ -81,9 +81,6 @@ class DbDao extends Dao
     public function fetchEntity($where = '1', $fields = '*', $orderBy = null)
     {
         $result = $this->fetchArray($where, $fields, $orderBy, 1);
-        echo "22222222222";
-        print_r($where);
-        print_r($result);
         if (!empty($result[0])) {
             return new $this->entity($result[0]);
         }
