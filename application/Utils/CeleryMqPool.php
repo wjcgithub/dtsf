@@ -27,7 +27,7 @@ class CeleryMqPool extends AbstractPool
             $config['pwd'],
             $config['vhost'],
             $config['exchange'],
-            '',
+            'dtsf_celery',
             $config['port'],
             [],
             [],
