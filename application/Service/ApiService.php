@@ -47,7 +47,7 @@ class ApiService extends AbstractService
      */
     public function PostTask($msgid = '', $tid, $payload)
     {
-        $result = Result::getInstance();
+        $result = Result::getCoInstance();
         try {
             $qResult = $this->getTaskInfoByTid($tid);
             if ($qResult->getCode() == Result::CODE_ERROR) {
@@ -68,11 +68,6 @@ class ApiService extends AbstractService
 
             \Dtsf\Coroutine\Coroutine::create(function () use ($msgid, $tid, $payload, $result, $taskInfo, $paramsArr) {
                 try {
-
-                    //写入数据库
-                    if (empty($msgid)) {
-                        $msgid = uniqid($taskInfo['taskName'], TRUE);
-                    }
 //                    $msgRes = MsgDao::getInstance()->add([
 //                        'msgid' => $msgid,
 //                        'payload' => $payload,
@@ -90,7 +85,7 @@ class ApiService extends AbstractService
 //                    } else {
 //                        throw new InsertMsgToDbException('insert msg to db error');
 //                    }
-                    CeleryMqDao::getInstance()->insert(
+                    CeleryMqDao::getCoInstance()->insert(
                         $msgid,
                         $taskInfo['taskName'],
                         ['payload' => json_encode($paramsArr)],

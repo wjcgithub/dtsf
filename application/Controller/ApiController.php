@@ -20,14 +20,14 @@ class ApiController extends Controller
      */
     public function PostTask()
     {
-        if (!ApiValidate::getInstance()->PostTaskValidate($this->data)) {
-            return ApiValidate::getInstance()->getError()->__toString();
+        if (!ApiValidate::getCoInstance()->PostTaskValidate($this->data)) {
+            return ApiValidate::getCoInstance()->getError()->__toString();
         }
-        return ApiService::getInstance()->PostTask('', $this->data['messageno'], $this->data['messagebody']);
+        return ApiService::getCoInstance()->PostTask('', $this->data['messageno'], $this->data['messagebody']);
     }
 
     public function test()
     {
-        return ApiService::getInstance()->PostTask(2);
+        return ApiService::getCoInstance()->PostTask(2);
     }
 }
