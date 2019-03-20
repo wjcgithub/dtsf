@@ -129,9 +129,9 @@ class DbDao extends Dao
                 $query .= " limit {$limit}";
             }
 
-            echo $query;
+//            echo $query;
             $res = $this->getDb()->rawQuery($query);
-            print_r($res);
+//            print_r($res);
             return $res;
         }catch (\Exception $e) {
             print_r($e->getMessage());

@@ -154,6 +154,7 @@ class ApiService extends AbstractService
             //缓存不存在，回写缓存
             if (empty($taskInfoStr = $redis->get($mtid))) {
                 $taskInfo = $this->generateCacheArr($tid);
+                echo "11111111111111111111111";
                 print_r($taskInfo);
                 $taskInfoStr = json_encode($taskInfo);
                 $redis->setex($mtid, self::CACHETIMEOUT, $taskInfoStr);
