@@ -80,7 +80,8 @@ case "$1" in
         ;;
         #退出
         force-quit)
-                $0 stop
+                ps -ef | grep dtsf | grep -v grep | awk '{print $2}' | xargs kill -9
+                #$0 stop
         ;;
         #重启
         restart)
