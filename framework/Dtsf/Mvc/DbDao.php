@@ -9,6 +9,8 @@
 namespace Dtsf\Mvc;
 
 
+use Dtsf\Core\Log;
+
 class DbDao extends Dao
 {
     protected $daoType = 'mysql';
@@ -116,17 +118,21 @@ class DbDao extends Dao
      */
     public function fetchArray($where = '1', $fields = '*', $orderBy = null, $limit = 0)
     {
-        $query = "SELECT {$fields} FROM {$this->getLibName()} WHERE {$where}";
+        try{
+            $query = "SELECT {$fields} FROM {$this->getLibName()} WHERE {$where}";
 
-        if ($orderBy) {
-            $query .= " order by {$orderBy}";
+            if ($orderBy) {
+                $query .= " order by {$orderBy}";
+            }
+
+            if ($limit) {
+                $query .= " limit {$limit}";
+            }
+
+            return $this->getDb()->rawQuery($query);
+        }catch (\Exception $e) {
+            Log::error('msg:'.$e->getMessage().'---trace:'.$e->getTraceAsString(), [],'db_error');
         }
-
-        if ($limit) {
-            $query .= " limit {$limit}";
-        }
-
-        return $this->getDb()->rawQuery($query);
     }
 
     /**
