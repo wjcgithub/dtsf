@@ -9,13 +9,13 @@
 namespace App\Service;
 
 use App\Dao\CeleryMqDao;
-use App\Dao\MsgDao;
 use App\Dao\ProducerErrorMsgDao;
 use App\Dao\QueueDao;
 use App\Dao\RabbitMqDao;
 use App\Dao\RedisDefaultDao;
 use App\Dao\TasksDao;
 use App\Entity\Result;
+use App\Exceptions\GetTaskInfoException;
 use App\Exceptions\InsertMsgToDbException;
 use Dtsf\Core\Log;
 use Dtsf\Core\WorkerApp;
@@ -47,7 +47,7 @@ class ApiService extends AbstractService
      */
     public function PostTask($msgid = '', $tid, $payload)
     {
-        $result = Result::getCoInstance();
+        $qResult = Result::getCoInstance();
         try {
             $qResult = $this->getTaskInfoByTid($tid);
             if ($qResult->getCode() == Result::CODE_ERROR) {
@@ -66,7 +66,7 @@ class ApiService extends AbstractService
                 $msgid = uniqid($taskInfo['taskName'], TRUE);
             }
 
-            \Dtsf\Coroutine\Coroutine::create(function () use ($msgid, $tid, $payload, $result, $taskInfo, $paramsArr) {
+            \Dtsf\Coroutine\Coroutine::create(function () use ($msgid, $tid, $payload, $qResult, $taskInfo, $paramsArr) {
                 try {
 //                    $msgRes = MsgDao::getInstance()->add([
 //                        'msgid' => $msgid,
@@ -95,7 +95,7 @@ class ApiService extends AbstractService
                     $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
                     Log::error($msg, [], $this->dtqProducerErrorLog);
                 } catch (InsertMsgToDbException $e) {
-                    $this->performExcepiton($e, $msgid, $tid, $payload, $result);
+                    $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
                 } catch (\Swoole\ExitException $e) {
                     $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile()
                         . '---line' . $e->getLine() . '---swoole-status' . $e->getStatus() . '---swoole-flags' . $e->getFlags();
@@ -114,16 +114,18 @@ class ApiService extends AbstractService
         } catch (\InvalidArgumentException $e) {
             $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
             Log::error($msg, [], $this->dtqProducerErrorLog);
-            $result->setCode(Result::CODE_ERROR)->setMsg($e->getMessage());
-        }catch (\Swoole\ExitException $e) {
+            $qResult->setCode(Result::CODE_ERROR)->setMsg($e->getMessage());
+        } catch (\Swoole\ExitException $e) {
             $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile()
                 . '---line' . $e->getLine() . '---swoole-status' . $e->getStatus() . '---swoole-flags' . $e->getFlags();
             Log::error($msg, [], $this->dtqProducerErrorLog);
-            $result->setCode(Result::CODE_ERROR)->setMsg('操作失败');
-        }  catch (\Exception $e) {
-            $this->performExcepiton($e, $msgid, $tid, $payload, $result);
+            $qResult->setCode(Result::CODE_ERROR)->setMsg('操作失败');
+        } catch (GetTaskInfoException $e) {
+            $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
+        } catch (\Exception $e) {
+            $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
             $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile() . '---line' . $e->getLine();
-            $result->setCode(Result::CODE_ERROR)->setMsg('操作失败');
+            $qResult->setCode(Result::CODE_ERROR)->setMsg('操作失败');
             Log::error($msg, [], $this->dtqProducerErrorLog);
         } catch (\Throwable $throwable) {
             Log::error("{worker_id} post to mq error, and current app status is {status}, msg: {msg}."
@@ -135,7 +137,7 @@ class ApiService extends AbstractService
                 , $this->dtqProducerErrorLog);
         }
 
-        return $result->toJson();
+        return $qResult->toJson();
     }
 
     /**
@@ -149,11 +151,14 @@ class ApiService extends AbstractService
         try {
             $taskInfoStr = '';
             $redis = RedisDefaultDao::getInstance();
-            //这里单独链接，是为了设置超时时间，而不影响其他使用者
+            //这里单独链接，是为了设置超时时间，而不影获取任务信息异常响其他使用者
             $mtid = $this->makeTid($tid);
             //缓存不存在，回写缓存
             if (empty($taskInfoStr = $redis->get($mtid))) {
                 $taskInfo = $this->generateCacheArr($tid);
+                if (empty($taskInfo)) {
+                    throw new GetTaskInfoException('从数据库获取任务信息失败_1');
+                }
                 $taskInfoStr = json_encode($taskInfo);
                 $redis->setex($mtid, self::CACHETIMEOUT, $taskInfoStr);
             }
@@ -165,6 +170,9 @@ class ApiService extends AbstractService
         } catch (DtRedisReException $e) {
             //缓存链接失败，或超时，读取数据库，并返回结果，防止缓存关掉接口不能用
             $taskInfo = $this->generateCacheArr($tid);
+            if (empty($taskInfo)) {
+                throw new GetTaskInfoException('从数据库获取任务信息失败_2');
+            }
             $result->setCode(Result::CODE_SUCCESS)->setMsg('success')->setData($taskInfo);
             Log::error('redis服务链接异常, host:', [], $this->dtqProducerErrorLog);
         } catch (\InvalidArgumentException $e) {
@@ -185,26 +193,29 @@ class ApiService extends AbstractService
      */
     private function generateCacheArr($tid)
     {
-        try{
-            $cacheValueArr = [];
+        $cacheValueArr = [];
+        try {
             $taskInfo = $this->fetchTaskInfo($tid);
-            if (!empty($taskInfo)) {
+            if (!empty($taskInfo) && !empty($taskInfo->queueid)) {
                 $where = "id = '{$taskInfo->queueid}'";
                 $fields = 'name';
                 $queueInfo = QueueDao::getInstance()->fetchEntity($where, $fields);
-                $cacheValueArr['queueName'] = 'group' . $taskInfo->groupid . '_' . $queueInfo->name;
-                $cacheValueArr['taskName'] = $queueInfo->name . '.task.handler';
-                $cacheValueArr['callback_url'] = $taskInfo->callback_url;
-                $cacheValueArr['type'] = $taskInfo->type;
-                $cacheValueArr['tid'] = $taskInfo->id;
+                if (!empty($queueInfo) && !empty($queueInfo->name)) {
+                    $cacheValueArr['queueName'] = 'group' . $taskInfo->groupid . '_' . $queueInfo->name;
+                    $cacheValueArr['taskName'] = $queueInfo->name . '.task.handler';
+                    $cacheValueArr['callback_url'] = $taskInfo->callback_url;
+                    $cacheValueArr['type'] = $taskInfo->type;
+                    $cacheValueArr['tid'] = $taskInfo->id;
+                } else {
+                    throw new \InvalidArgumentException('该任务所在队列不存在');
+                }
             } else {
                 throw new \InvalidArgumentException('该任务不存在, 或者已被禁用');
             }
-            return $cacheValueArr;
-        }catch (\Exception $e) {
-            print_r($e->getMessage());
+        } catch (\Exception $e) {
+            Log::error('msg:' . $e->getMessage() . '---trace:' . $e->getTraceAsString(), [], 'db_error');
         }
-
+        return $cacheValueArr;
     }
 
 

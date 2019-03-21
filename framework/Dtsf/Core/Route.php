@@ -47,7 +47,7 @@ class Route
                 $request->withAttribute(Controller::_METHOD_KEY_, $routeInfo[1][1]);
                 $controllerName = $routeInfo[1][0];
                 $methodName = $routeInfo[1][1];
-                $result = $controllerName::getInstance()->$methodName();
+                $result = $controllerName::getCoInstance()->$methodName();
             } elseif (is_string($routeInfo[1])) {
                 //字符串, 格式: controllerName@MethodName
                 list($controllerName, $methodName) = explode('@', $routeInfo[1]);
@@ -59,7 +59,7 @@ class Route
 
                 $request->withAttribute(Controller::_CONTROLLER_KEY_, $controllerName);
                 $request->withAttribute(Controller::_METHOD_KEY_, $methodName);
-                $result = $controllerName::getInstance()->$methodName();
+                $result = $controllerName::getCoInstance()->$methodName();
             } elseif (is_callable($routeInfo[1])) {
                 //回调函数, 直接执行
                 $result = $routeInfo[1](...$routeInfo[2]);
@@ -114,6 +114,6 @@ class Route
         $controllerName = 'App\\Controller\\' . $controllerName . 'Controller';
         $request->withAttribute(Controller::_CONTROLLER_KEY_, $controllerName);
         $request->withAttribute(Controller::_METHOD_KEY_, $methodName);
-        return $controllerName::getInstance()->$methodName();
+        return $controllerName::getCoInstance()->$methodName();
     }
 }
