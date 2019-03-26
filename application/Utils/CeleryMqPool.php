@@ -36,9 +36,14 @@ class CeleryMqPool extends AbstractPool
 //            __NAMESPACE__.'\MqConfirm::nack',
 //            __NAMESPACE__.'\MqConfirm::returnMsg',
             'php-amqplib',
-            false,
+            0,
             $config['connection_timeout'],
-            $config['read_write_timeout']
+            $config['read_write_timeout'],
+            false,
+            [],
+            null,
+            $config['keepalive'],
+            $config['heartbeat']
         );
         $obj->objectName = uniqid();
         return $obj;
