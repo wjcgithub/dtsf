@@ -34,6 +34,7 @@ class MainService
      */
     public function initService()
     {
+//        \Swoole\Runtime::enableCoroutine(true, SWOOLE_HOOK_ALL ^ SWOOLE_HOOK_STREAM_SELECT);
         \Swoole\Runtime::enableCoroutine();
         if (!defined('DS')) {
             define('DS', DIRECTORY_SEPARATOR);
@@ -55,6 +56,7 @@ class MainService
      */
     public function createMainService(): \Swoole\Http\Server
     {
+        //SWOOLE_BASE
         $this->mainServer = new \Swoole\Http\Server(Config::get('host'), Config::get('port'));
         $serverConfig = Config::get('swoole_setting');
         $logBasePath = rtrim(Dtsf::$applicationLogPath, '/');

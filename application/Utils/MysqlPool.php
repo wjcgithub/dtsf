@@ -22,7 +22,9 @@ class MysqlPool extends AbstractPool
     {
         $conf = Config::get('mysql.default.master');
         $dbConf = new \EasySwoole\Mysqli\Config($conf);
-        return new MysqlObject($dbConf);
+        $mysqlObj = new MysqlObject($dbConf);
+        $mysqlObj->connect();
+        return $mysqlObj;
     }
 
     public function getLength()

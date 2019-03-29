@@ -57,6 +57,7 @@ class DtsfInitProvider
 
         if (Config::get('env') == 'testing') {
             $this->debugPoolInfo();
+            $this->memoryInfo();
             $this->debugCoroutineInfo();
         }
     }
@@ -112,7 +113,10 @@ class DtsfInitProvider
                 'MysqlPool' => "pid: {worker_id}---MysqlPool----" . json_encode(PoolManager::getInstance()->getPool(MysqlPool::class)->status())],
                 ['{worker_id}' => posix_getpid()], 'pool_num');
         });
-
+    }
+    
+    private function memoryInfo()
+    {
         $totalMemory = memory_get_usage();
         $actualyMemory = memory_get_usage(true);
         $totalPeakMemory = memory_get_peak_usage();

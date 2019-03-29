@@ -9,6 +9,8 @@
 namespace Dtsf\Mvc;
 
 
+use Dtsf\Core\Log;
+
 class DbDao extends Dao
 {
     protected $daoType = 'mysql';
@@ -16,29 +18,30 @@ class DbDao extends Dao
      * @var string mysql 链接
      */
     protected $connection = '';
-
+    private $db_error_log = 'db_error_log';
+    
     /**
      * @var entity名
      */
     protected $entity;
-
+    
     /**
      * @var mysql连接数组
      * @desc 不同协程不能复用mysql连接，所以通过协程id进行资源隔离
      */
     private $dbs;
-
+    
     /**
      * @var Mysql
      */
     protected $db;
-
+    
     //表名
     protected $table;
-
+    
     //主键字段名
     protected $pkId;
-
+    
     public function __construct($entity)
     {
         $this->entity = $entity;
@@ -47,8 +50,8 @@ class DbDao extends Dao
         $this->table = $entityRef->getConstant('TABLE_NAME');
         $this->pkId = $entityRef->getConstant('PK_ID');
     }
-
-
+    
+    
     /**
      * @return mixed
      * @desc 获取表名
@@ -57,7 +60,7 @@ class DbDao extends Dao
     {
         return $this->table;
     }
-
+    
     /**
      * @param $id
      * @param string $fields
@@ -68,7 +71,7 @@ class DbDao extends Dao
     {
         return $this->fetchEntity("{$this->pkId} = {$id}", $fields);
     }
-
+    
     /**
      * @param string $where
      * @param string $fields
@@ -84,7 +87,7 @@ class DbDao extends Dao
         }
         return null;
     }
-
+    
     /**
      * @param string $where
      * @param string $fields
@@ -104,8 +107,8 @@ class DbDao extends Dao
         }
         return $result;
     }
-
-
+    
+    
     /**
      * @param string $where
      * @param string $fields
@@ -117,35 +120,40 @@ class DbDao extends Dao
     public function fetchArray($where = '1', $fields = '*', $orderBy = null, $limit = 0)
     {
         $query = "SELECT {$fields} FROM {$this->getLibName()} WHERE {$where}";
-
+        
         if ($orderBy) {
             $query .= " order by {$orderBy}";
         }
-
+        
         if ($limit) {
             $query .= " limit {$limit}";
         }
-
+        
         return $this->getDb()->rawQuery($query);
     }
-
+    
     /**
      * @param array $array
      * @return bool
      * @desc 插入一条记录
      */
-    public function add(array $array)
+    public function add(array $array, $onDuplicate = '')
     {
-        $strFields = '`' . implode('`,`', array_keys($array)) . '`';
-        $strValues = "'" . implode("','", array_values($array)) . "'";
-        $query = "INSERT INTO {$this->getLibName()} ({$strFields}) VALUES ({$strValues})";
-        if (!empty($onDuplicate)) {
-            $query .= 'ON DUPLICATE KEY UPDATE ' . $onDuplicate;
+        try {
+            $strFields = '`' . implode('`,`', array_keys($array)) . '`';
+            $strValues = "'" . implode("','", array_values($array)) . "'";
+            $query = "INSERT INTO {$this->getLibName()} ({$strFields}) VALUES ({$strValues})";
+            if (!empty($onDuplicate)) {
+                $query .= 'ON DUPLICATE KEY UPDATE ' . $onDuplicate;
+            }
+            return $this->getDb()->rawQuery($query);
+        } catch (\Throwable $e) {
+            $msg = '写入数据库异常---code: ' . $e->getCode() . '---msg: ' . $e->getMessage() . '---trace: ' . $e->getTraceAsString();
+            Log::error($msg, [], $this->db_error_log);
         }
-
-        return $this->getDb()->rawQuery($query);
+        return false;
     }
-
+    
     /**
      * @param array $array
      * @param $where
@@ -166,7 +174,7 @@ class DbDao extends Dao
         $query = "UPDATE {$this->getLibName()} SET {$strUpdateFields} WHERE {$where}";
         return $this->getDb()->rawQuery($query);
     }
-
+    
     /**
      * @param $where
      * @return mixed
@@ -178,7 +186,7 @@ class DbDao extends Dao
         if (empty($where)) {
             throw new \Exception('delete 必需有where条件限定');
         }
-
+        
         $query = "DELETE FROM {$this->getLibName()} WHERE {$where}";
         $result = $this->db->query($query);
         return $result['affected_rows'];

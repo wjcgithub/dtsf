@@ -9,6 +9,7 @@
 namespace App\Service;
 
 use App\Dao\CeleryMqDao;
+use App\Dao\MsgDao;
 use App\Dao\ProducerErrorMsgDao;
 use App\Dao\QueueDao;
 use App\Dao\RabbitMqDao;
@@ -17,6 +18,8 @@ use App\Dao\TasksDao;
 use App\Entity\Result;
 use App\Exceptions\GetTaskInfoException;
 use App\Exceptions\InsertMsgToDbException;
+use App\Utils\CeleryMqObject;
+use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Core\WorkerApp;
 use Dtsf\Db\Redis\DtRedisReException;
@@ -68,29 +71,61 @@ class ApiService extends AbstractService
 
             \Dtsf\Coroutine\Coroutine::create(function () use ($msgid, $tid, $payload, $qResult, $taskInfo, $paramsArr) {
                 try {
-//                    $msgRes = MsgDao::getInstance()->add([
-//                        'msgid' => $msgid,
-//                        'payload' => $payload,
-//                        'ctime' => date('Y-m-d H:i:s'),
-//                        'status' => 0
-//                    ]);
-//                    $msgRes = 1;
-//                    if ($msgRes) {
-//                        CeleryMqDao::getInstance()->insert(
-//                            $msgid,
-//                            $taskInfo['taskName'],
-//                            ['payload' => json_encode($payload)],
-//                            $taskInfo['queueName']
-//                        );
-//                    } else {
-//                        throw new InsertMsgToDbException('insert msg to db error');
-//                    }
-                    CeleryMqDao::getCoInstance()->insert(
-                        $msgid,
-                        $taskInfo['taskName'],
-                        ['payload' => json_encode($paramsArr)],
-                        $taskInfo['queueName']
-                    );
+//                    $config = Config::get('celery.default');
+//                    var_dump($config);
+//                    $obj = new CeleryMqObject(
+//                        $config['host'],
+//                        $config['uname'],
+//                        $config['pwd'],
+//                        $config['vhost'],
+//                        $config['exchange'],
+//                        'dtsf_celery',
+//                        $config['port'],
+//                        [],
+//                        [],
+//                        [],
+////            __NAMESPACE__.'\MqConfirm::ack',
+////            __NAMESPACE__.'\MqConfirm::nack',
+////            __NAMESPACE__.'\MqConfirm::returnMsg',
+//                        'php-amqplib',
+//                        0,
+//                        $config['connection_timeout'],
+//                        $config['read_write_timeout'],
+//                        false,
+//                        [],
+//                        null,
+//                        $config['keepalive'],
+//                        $config['heartbeat']
+//                    );
+//
+//                    $s = $obj->PostTask($msgid, $taskInfo['taskName'], json_encode($payload), false, $taskInfo['queueName']);
+//                    var_dump($s);
+//                    return 1;
+                    
+//                    $s = CeleryMqDao::getInstance()->insert(
+//                        $msgid,
+//                        $taskInfo['taskName'],
+//                        ['payload' => json_encode($payload)],
+//                        $taskInfo['queueName']
+//                    );
+//                    var_dump($s);
+//                    return 1;
+                    $msgRes = MsgDao::getInstance()->add([
+                        'msgid' => $msgid,
+                        'payload' => $payload,
+                        'ctime' => date('Y-m-d H:i:s'),
+                        'status' => 0
+                    ]);
+                    if ($msgRes) {
+                        CeleryMqDao::getInstance()->insert(
+                            $msgid,
+                            $taskInfo['taskName'],
+                            ['payload' => json_encode($payload)],
+                            $taskInfo['queueName']
+                        );
+                    } else {
+                        throw new InsertMsgToDbException('insert msg to db error');
+                    }
                 } catch (\InvalidArgumentException $e) {
                     $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
                     Log::error($msg, [], $this->dtqProducerErrorLog);

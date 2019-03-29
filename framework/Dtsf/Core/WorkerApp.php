@@ -93,7 +93,6 @@ class WorkerApp extends WorkerBase
         Coroutine::setBaseId();
         //初始化上下文
         $context = new Context($request, $response);
-        $this->recordAccessLog($context->getRequest());
         $context->set('serv', $http);
         //存放到容器pool
         ContextPool::put($context);
