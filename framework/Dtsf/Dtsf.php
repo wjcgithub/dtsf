@@ -45,11 +45,10 @@ class Dtsf
                 DtsfInitProvider::getInstance()->workerStop($worker_id);
                 Log::info("worker {worker_id} stoped.", ['{worker_id}' => $worker_id], 'stop');
             });
-            https://github.com/wjcgithub/dtsf   这个是我参考桶哥那个文章搞的又自己改造下, 目的想实现一个类似java里面那个mq的confirm机制, 符合我们这个100%消息投递场景, 现在还在开发, 你们那个框架有这个功能用吗, 有的话我就直接用了
+            
             $http->on('workerExit', function (Swoole\Http\Server $serv, int $worker_id) {
-//                if (WorkerApp::getInstance()->serverStatus !=)
-                WorkerApp::getInstance()->setWorkerStatus(WorkerApp::WORKEREXIT);
-                DtsfInitProvider::getInstance()->workerExit($worker_id);
+//                WorkerApp::getInstance()->setWorkerStatus(WorkerApp::WORKEREXIT);
+//                DtsfInitProvider::getInstance()->workerExit($worker_id);
                 Log::info("worker {worker_id} exit.", ['{worker_id}' => $worker_id], 'stop');
             });
 

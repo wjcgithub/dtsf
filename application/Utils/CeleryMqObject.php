@@ -44,5 +44,4 @@ class CeleryMqObject extends \Celery implements PoolObjectInterface
     {
         return $this->getBrokerConnectStatus();
     }
-
 }

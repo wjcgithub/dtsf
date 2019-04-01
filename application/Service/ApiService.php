@@ -56,6 +56,7 @@ class ApiService extends AbstractService
             if ($qResult->getCode() == Result::CODE_ERROR) {
                 return $qResult->toJson();
             }
+    
             $taskInfo = $qResult->getData();
             $paramsArr = [];
             //task message body
@@ -68,72 +69,27 @@ class ApiService extends AbstractService
             if (empty($msgid)) {
                 $msgid = uniqid($taskInfo['taskName'], TRUE);
             }
+    
+            $msgRes = MsgDao::getInstance()->add([
+                'msgid' => $msgid,
+                'payload' => $payload,
+                'ctime' => date('Y-m-d H:i:s'),
+                'status' => 0
+            ]);
+            if (!$msgRes) {
+                throw new InsertMsgToDbException('insert msg to db error');
+            }
 
             \Dtsf\Coroutine\Coroutine::create(function () use ($msgid, $tid, $payload, $qResult, $taskInfo, $paramsArr) {
                 try {
-//                    $config = Config::get('celery.default');
-//                    var_dump($config);
-//                    $obj = new CeleryMqObject(
-//                        $config['host'],
-//                        $config['uname'],
-//                        $config['pwd'],
-//                        $config['vhost'],
-//                        $config['exchange'],
-//                        'dtsf_celery',
-//                        $config['port'],
-//                        [],
-//                        [],
-//                        [],
-////            __NAMESPACE__.'\MqConfirm::ack',
-////            __NAMESPACE__.'\MqConfirm::nack',
-////            __NAMESPACE__.'\MqConfirm::returnMsg',
-//                        'php-amqplib',
-//                        0,
-//                        $config['connection_timeout'],
-//                        $config['read_write_timeout'],
-//                        false,
-//                        [],
-//                        null,
-//                        $config['keepalive'],
-//                        $config['heartbeat']
-//                    );
-//
-//                    $s = $obj->PostTask($msgid, $taskInfo['taskName'], json_encode($payload), false, $taskInfo['queueName']);
-//                    var_dump($s);
-//                    return 1;
-                    
-//                    $s = CeleryMqDao::getInstance()->insert(
-//                        $msgid,
-//                        $taskInfo['taskName'],
-//                        ['payload' => json_encode($payload)],
-//                        $taskInfo['queueName']
-//                    );
-//                    var_dump($s);
-//                    return 1;
-                    $msgRes = MsgDao::getInstance()->add([
-                        'msgid' => $msgid,
-                        'payload' => $payload,
-                        'ctime' => date('Y-m-d H:i:s'),
-                        'status' => 0
-                    ]);
-                    if ($msgRes) {
-                        CeleryMqDao::getInstance()->insert(
-                            $msgid,
-                            $taskInfo['taskName'],
-                            ['payload' => json_encode($payload)],
-                            $taskInfo['queueName']
-                        );
-                    } else {
-                        throw new InsertMsgToDbException('insert msg to db error');
-                    }
+                    CeleryMqDao::getInstance()->insert(
+                        $msgid,
+                        $taskInfo['taskName'],
+                        ['payload' => json_encode($payload)],
+                        $taskInfo['queueName']
+                    );
                 } catch (\InvalidArgumentException $e) {
                     $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
-                    Log::error($msg, [], $this->dtqProducerErrorLog);
-                } catch (InsertMsgToDbException $e) {
-                    $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
-                } catch (\Swoole\ExitException $e) {
-                    $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile()
-                        . '---line' . $e->getLine() . '---swoole-status' . $e->getStatus() . '---swoole-flags' . $e->getFlags();
                     Log::error($msg, [], $this->dtqProducerErrorLog);
                 } catch (\Throwable $throwable) {
                     Log::error("{worker_id} post to mq error on coroutine, and current app status is {status}, msg: {msg}."
@@ -146,30 +102,26 @@ class ApiService extends AbstractService
                 }
             });
             $qResult->setCode(Result::CODE_SUCCESS)->setData($msgid)->setMsg('success');
+            
         } catch (\InvalidArgumentException $e) {
             $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
             Log::error($msg, [], $this->dtqProducerErrorLog);
             $qResult->setCode(Result::CODE_ERROR)->setMsg($e->getMessage());
-        } catch (\Swoole\ExitException $e) {
-            $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile()
-                . '---line' . $e->getLine() . '---swoole-status' . $e->getStatus() . '---swoole-flags' . $e->getFlags();
-            Log::error($msg, [], $this->dtqProducerErrorLog);
-            $qResult->setCode(Result::CODE_ERROR)->setMsg('操作失败');
         } catch (GetTaskInfoException $e) {
             $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
-        } catch (\Exception $e) {
-            $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
-            $msg = '操作失败, msg---' . $e->getMessage() . '---file:' . $e->getFile() . '---line' . $e->getLine();
-            $qResult->setCode(Result::CODE_ERROR)->setMsg('操作失败');
-            Log::error($msg, [], $this->dtqProducerErrorLog);
+            $qResult->setCode(Result::CODE_ERROR)->setMsg('获取任务信息失败');
+        } catch (InsertMsgToDbException $e) {
+            $qResult->setCode(Result::CODE_ERROR)->setMsg("保存消息到db失败");
         } catch (\Throwable $throwable) {
-            Log::error("{worker_id} post to mq error, and current app status is {status}, msg: {msg}."
+            $this->performExcepiton($throwable, $msgid, $tid, $payload, $qResult);
+            Log::error("{worker_id} 致命错误, and current app status is {status}, msg: {msg}."
                 , [
                     '{worker_id}' => posix_getppid(),
                     '{status}' => WorkerApp::getInstance()->serverStatus,
                     '{msg}' => $throwable->getMessage() . '====trace:' . $throwable->getTraceAsString()
                 ]
                 , $this->dtqProducerErrorLog);
+            $qResult->setCode(Result::CODE_ERROR)->setMsg('操作失败');
         }
 
         return $qResult->toJson();

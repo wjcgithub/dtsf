@@ -57,48 +57,24 @@ class DtsfInitProvider
 
         if (Config::get('env') == 'testing') {
             $this->debugPoolInfo();
-            $this->memoryInfo();
-            $this->debugCoroutineInfo();
+//            $this->memoryInfo();
+//            $this->debugCoroutineInfo();
         }
     }
 
-    public function workerStop($worker_id)
-    {
-//        if (($worker_id < Config::get('swoole_setting.worker_num')) && $worker_id >= 0) {
-//            $mysqlConfig = Config::get('mysql.default');
-//            if (!empty($mysqlConfig)) {
-//                go(function () use ($mysqlConfig) {
-//                    PoolManager::getInstance()->getPool($mysqlConfig['class'], $mysqlConfig['pool_size'])->gcObject(0);
-//                });
-//            }
-//
-//            $redisConfig = Config::get('redis.default');
-//            if (!empty($redisConfig)) {
-//                go(function () use ($redisConfig) {
-//                    PoolManager::getInstance()->getPool($redisConfig['class'], $redisConfig['pool_size'])->gcObject(0);
-//                });
-//            }
-//
-//            $rabbitmqConfig = Config::get('celery.default');
-//            if (!empty($rabbitmqConfig)) {
-//                go(function () use ($rabbitmqConfig) {
-//                    PoolManager::getInstance()->getPool($rabbitmqConfig['class'], $rabbitmqConfig['pool_size'])->gcObject(0);
-//                });
-//            }
-//        }
-    }
+    public function workerStop($worker_id){}
 
     public static function workerExit($worker_id)
     {
         //判断是不是worker进程
-        if (($worker_id < Config::get('swoole_setting.worker_num')) && $worker_id >= 0) {
-            $rabbitmqConfig = Config::get('celery.default');
-            if (!empty($rabbitmqConfig)) {
-                go(function () use ($rabbitmqConfig) {
-                    PoolManager::getInstance()->getPool($rabbitmqConfig['class'])->gcObject(-1);
-                });
-            }
-        }
+//        if (($worker_id < Config::get('swoole_setting.worker_num')) && $worker_id >= 0) {
+//            $rabbitmqConfig = Config::get('celery.default');
+//            if (!empty($rabbitmqConfig)) {
+//                go(function () use ($rabbitmqConfig) {
+//                    PoolManager::getInstance()->getPool($rabbitmqConfig['class'])->gcObject(-1);
+//                });
+//            }
+//        }
     }
 
     /**
