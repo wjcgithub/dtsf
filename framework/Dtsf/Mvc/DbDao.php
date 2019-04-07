@@ -146,7 +146,15 @@ class DbDao extends Dao
             if (!empty($onDuplicate)) {
                 $query .= 'ON DUPLICATE KEY UPDATE ' . $onDuplicate;
             }
-            return $this->getDb()->rawQuery($query);
+            $dbObj = $this->getDb();
+            $rest = $dbObj->rawQuery($query);
+            
+            if (!$rest) {
+                $msg = '写入数据库异常---errno: ' . $dbObj->getLastErrno() . '---msg: ' . $dbObj->getLastError();
+                Log::error($msg, [], $this->db_error_log);
+            }
+            
+            return $rest;
         } catch (\Throwable $e) {
             $msg = '写入数据库异常---code: ' . $e->getCode() . '---msg: ' . $e->getMessage() . '---trace: ' . $e->getTraceAsString();
             Log::error($msg, [], $this->db_error_log);

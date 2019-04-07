@@ -18,8 +18,6 @@ use App\Dao\TasksDao;
 use App\Entity\Result;
 use App\Exceptions\GetTaskInfoException;
 use App\Exceptions\InsertMsgToDbException;
-use App\Utils\CeleryMqObject;
-use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Core\WorkerApp;
 use Dtsf\Db\Redis\DtRedisReException;
@@ -29,19 +27,23 @@ class ApiService extends AbstractService
     const TASKPREX = 'celery:task';
     const CACHETIMEOUT = 3600 * 24;  //单位秒
     const REDIS_TIMEOUT = 2;
-
+    
     //Tasks
     const TASK_STATUS_ENABLE = 1;
     const TASK_STATUS_DISABLE = 0;
     const TASK_STATUS_DELETE = 2;
-
+    
+    //msg
+    const ACK = 1;
+    const UNACK = 0;
+    
     //当存储消息时候产生的异常日志
     private $dtqProducerErrorLog = 'dtq_producer_error';
     //当异常时将消息存储到db日志
     private $dtqProducerToRabbitmqErrorLog = 'dtq_producer_to_rabbitmq_error';
     //保存失败时候的原始数据
     private $dtqOriginMsg = 'dtq_origin_msg';
-
+    
     /**
      * @param string $msgid
      * @param $tid
@@ -56,7 +58,7 @@ class ApiService extends AbstractService
             if ($qResult->getCode() == Result::CODE_ERROR) {
                 return $qResult->toJson();
             }
-    
+            
             $taskInfo = $qResult->getData();
             $paramsArr = [];
             //task message body
@@ -68,24 +70,30 @@ class ApiService extends AbstractService
             $paramsArr['tid'] = $taskInfo['tid'];
             if (empty($msgid)) {
                 $msgid = uniqid($taskInfo['taskName'], TRUE);
+                $msgRes = MsgDao::getInstance()->add([
+                    'msgid' => $msgid,
+                    'tid' => $tid,
+                    'payload' => $payload,
+                    'status' => self::UNACK,
+                    'count' => 0,
+                    'ctime' => date('Y-m-d H:i:s')
+                ]);
+                if (!$msgRes) {
+                    throw new InsertMsgToDbException('insert msg to db error');
+                }
             }
-    
-            $msgRes = MsgDao::getInstance()->add([
-                'msgid' => $msgid,
-                'payload' => $payload,
-                'ctime' => date('Y-m-d H:i:s'),
-                'status' => 0
-            ]);
-            if (!$msgRes) {
-                throw new InsertMsgToDbException('insert msg to db error');
-            }
-
+            
             \Dtsf\Coroutine\Coroutine::create(function () use ($msgid, $tid, $payload, $qResult, $taskInfo, $paramsArr) {
                 try {
+                    $payloadArr = json_decode($payload, 1);
+                    $payloadArr['msgid'] = $msgid;
+                    $paramsArr['p'] = json_encode($payloadArr);
+//                    var_dump(base64_encode($paramsArr['p']));
+                    
                     CeleryMqDao::getInstance()->insert(
                         $msgid,
                         $taskInfo['taskName'],
-                        ['payload' => json_encode($payload)],
+                        ['payload' => json_encode($paramsArr)],
                         $taskInfo['queueName']
                     );
                 } catch (\InvalidArgumentException $e) {
@@ -102,7 +110,6 @@ class ApiService extends AbstractService
                 }
             });
             $qResult->setCode(Result::CODE_SUCCESS)->setData($msgid)->setMsg('success');
-            
         } catch (\InvalidArgumentException $e) {
             $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
             Log::error($msg, [], $this->dtqProducerErrorLog);
@@ -111,6 +118,7 @@ class ApiService extends AbstractService
             $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
             $qResult->setCode(Result::CODE_ERROR)->setMsg('获取任务信息失败');
         } catch (InsertMsgToDbException $e) {
+            $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
             $qResult->setCode(Result::CODE_ERROR)->setMsg("保存消息到db失败");
         } catch (\Throwable $throwable) {
             $this->performExcepiton($throwable, $msgid, $tid, $payload, $qResult);
@@ -123,10 +131,10 @@ class ApiService extends AbstractService
                 , $this->dtqProducerErrorLog);
             $qResult->setCode(Result::CODE_ERROR)->setMsg('操作失败');
         }
-
+        
         return $qResult->toJson();
     }
-
+    
     /**
      * @param $tid
      * @return mixed
@@ -171,7 +179,7 @@ class ApiService extends AbstractService
         }
         return $result;
     }
-
+    
     /**
      * 生成要存储的缓存结构
      *
@@ -204,8 +212,8 @@ class ApiService extends AbstractService
         }
         return $cacheValueArr;
     }
-
-
+    
+    
     /**
      * 查询队列信息
      *
@@ -218,7 +226,7 @@ class ApiService extends AbstractService
         $fields = '*';
         return TasksDao::getInstance()->fetchEntity($where, $fields);
     }
-
+    
     /**
      * 组装mtid
      *
@@ -229,7 +237,7 @@ class ApiService extends AbstractService
     {
         return self::TASKPREX . ':' . $tid;
     }
-
+    
     /**
      * 处理redis, rabbitmq异常的情况
      *
@@ -255,11 +263,11 @@ class ApiService extends AbstractService
         } catch (\Exception $e) {
             Log::error('保存投递失败消息失败----msg' . $e->getMessage() . "--body:" . json_encode($errorParam), [], $this->dtqProducerToRabbitmqErrorLog);
         }
-
+        
         $result->setCode(Result::CODE_SUCCESS)->setMsg('success');
         return $result;
     }
-
+    
     /**
      * 当异常发生时，记录原始数据
      *

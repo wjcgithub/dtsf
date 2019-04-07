@@ -34,7 +34,7 @@ class Dao
             $this->storage[$coId] = PoolManager::getInstance()->getPool(Config::get($this->daoType . '.' . $this->connection . '.class'))
                 ->getObj();
             if (empty($this->storage[$coId])) {
-                Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请after{$this->waitPoolTime}s", [], 'dbpool');
+//                Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请after{$this->waitPoolTime}s", [], 'dbpool');
                 if ($this->waitPoolTime>=3) {
                     $this->waitPoolTime = 0.5;
                 }

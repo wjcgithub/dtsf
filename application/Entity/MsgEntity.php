@@ -15,10 +15,13 @@ class MsgEntity extends Entity
 {
     const CONNECTION = 'default';
     const TABLE_NAME = 'msg';
-    const PK_ID = 'msgid';
+    const PK_ID = 'id';
     //数据表字段
     public $msgid;
+    public $tid;
     public $payload;
-    public $ctime;
     public $status;
+    public $count;
+    public $ctime;
+    public $utime;
 }

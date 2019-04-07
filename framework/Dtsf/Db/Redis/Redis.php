@@ -86,7 +86,7 @@ class Redis
                 Log::warning('redis query false'. $name . '=====' . json_encode($arguments));
                 if (!$this->redis->connected) { //断线重连
                     $this->reconnect();
-                    Log::info('redis reconnect' . $name . '=====' . json_encode($arguments));
+                    Log::warning('redis reconnect' . $name . '=====' . json_encode($arguments));
                     $result = call_user_func_array(array($this->redis, $name), $arguments);
                 }
 
