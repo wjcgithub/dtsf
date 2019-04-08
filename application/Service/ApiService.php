@@ -50,7 +50,7 @@ class ApiService extends AbstractService
      * @param $payload
      * @return mixed
      */
-    public function PostTask($msgid = '', $tid, $payload)
+    public function PostTask($msgid = '', $tid, $payload, $op)
     {
         $qResult = Result::getCoInstance();
         try {
@@ -68,19 +68,23 @@ class ApiService extends AbstractService
             //task type
             $paramsArr['t'] = $taskInfo['type'];
             $paramsArr['tid'] = $taskInfo['tid'];
-            if (empty($msgid)) {
-                $msgid = uniqid($taskInfo['taskName'], TRUE);
-                $msgRes = MsgDao::getInstance()->add([
-                    'msgid' => $msgid,
-                    'tid' => $tid,
-                    'payload' => $payload,
-                    'status' => self::UNACK,
-                    'count' => 0,
-                    'ctime' => date('Y-m-d H:i:s')
-                ]);
-                if (!$msgRes) {
-                    throw new InsertMsgToDbException('insert msg to db error');
+            if (!$op['fast']){
+                if (empty($msgid)) {
+                    $msgid = uniqid($taskInfo['taskName'], TRUE);
+                    $msgRes = MsgDao::getInstance()->add([
+                        'msgid' => $msgid,
+                        'tid' => $tid,
+                        'payload' => $payload,
+                        'status' => self::UNACK,
+                        'count' => 0,
+                        'ctime' => date('Y-m-d H:i:s')
+                    ]);
+                    if (!$msgRes) {
+                        throw new InsertMsgToDbException('insert msg to db error');
+                    }
                 }
+            }else{
+                $msgid = uniqid($taskInfo['taskName'], TRUE);
             }
             
             \Dtsf\Coroutine\Coroutine::create(function () use ($msgid, $tid, $payload, $qResult, $taskInfo, $paramsArr) {

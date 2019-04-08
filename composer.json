@@ -18,8 +18,8 @@
         "hassankhan/config": "^2.0",
         "paragonie/easydb": "^2",
         "wangjichao/swoole-celery": "*",
-        "php-amqplib/php-amqplib": "^2.8",
-        "easyswoole/mysqli": "^1.1"
+        "easyswoole/mysqli": "^1.1",
+        "php-amqplib/php-amqplib": "^2.9"
     },
     "autoload": {
         "classmap": [],

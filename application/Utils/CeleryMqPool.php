@@ -21,6 +21,7 @@ class CeleryMqPool extends AbstractPool
     protected function createObject(): PoolObjectInterface
     {
         $config = Config::get('celery.default');
+        $confirmObj = new MqConfirm();
         $obj = new CeleryMqObject(
             $config['host'],
             $config['uname'],
@@ -32,9 +33,9 @@ class CeleryMqPool extends AbstractPool
 //            [],
 //            [],
 //            [],
-            __NAMESPACE__.'\MqConfirm::ack',
-            __NAMESPACE__.'\MqConfirm::nack',
-            __NAMESPACE__.'\MqConfirm::returnMsg',
+            [$confirmObj, 'ack'],
+            [$confirmObj, 'nack'],
+            [$confirmObj, 'returnMsg'],
             'php-amqplib',
             0,
             $config['connection_timeout'],

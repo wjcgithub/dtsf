@@ -13,9 +13,9 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 interface MqConfirmInterface
 {
-    static public function ack(AMQPMessage $message);
+    public function ack(AMQPMessage $message);
 
-    static public function nack(AMQPMessage $message);
+    public function nack(AMQPMessage $message);
 
-    static public function returnMsg(array $params);
+    public function returnMsg(array $params);
 }
