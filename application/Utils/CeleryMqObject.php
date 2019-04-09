@@ -19,7 +19,7 @@ class CeleryMqObject extends \Celery implements PoolObjectInterface
 
     public function gc()
     {
-        Log::info("obj {obj} of worker {worker_id} start execting celeryMq gc, and current app status is {status}."
+        Log::debug("obj {obj} of worker {worker_id} start execting celeryMq gc, and current app status is {status}."
             , [
                 '{obj}' => $this->objectName,
                 '{worker_id}' => posix_getppid(),

@@ -9,6 +9,7 @@
 namespace Dtsf\Mvc;
 
 
+use App\Exceptions\GetDaoException;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Coroutine\Coroutine;
@@ -25,7 +26,7 @@ class Dao
      * @param string $dbTag
      * @return mixed
      */
-    public function getDb()
+    public function getDb($retries = 50)
     {
         $coId = Coroutine::getId();
         if (empty($this->storage[$coId])) {
@@ -34,12 +35,11 @@ class Dao
             $this->storage[$coId] = PoolManager::getInstance()->getPool(Config::get($this->daoType . '.' . $this->connection . '.class'))
                 ->getObj();
             if (empty($this->storage[$coId])) {
-//                Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请after{$this->waitPoolTime}s", [], 'dbpool');
-                if ($this->waitPoolTime>=3) {
-                    $this->waitPoolTime = 0.5;
+                if ($retries < 0) {
+                    throw new GetDaoException("可用链接不足!");
                 }
-                \Swoole\Coroutine::sleep($this->waitPoolTime+=0.5);
-                return $this->getDb();
+                Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请", [], 'dbpool');
+                return $this->getDb(--$retries);
             }else{
                 defer(function () {
                     $this->recycle();

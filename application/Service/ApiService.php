@@ -16,6 +16,7 @@ use App\Dao\RabbitMqDao;
 use App\Dao\RedisDefaultDao;
 use App\Dao\TasksDao;
 use App\Entity\Result;
+use App\Exceptions\GetDaoException;
 use App\Exceptions\GetTaskInfoException;
 use App\Exceptions\InsertMsgToDbException;
 use Dtsf\Core\Log;
@@ -118,6 +119,9 @@ class ApiService extends AbstractService
             $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
             Log::error($msg, [], $this->dtqProducerErrorLog);
             $qResult->setCode(Result::CODE_ERROR)->setMsg($e->getMessage());
+        } catch (GetDaoException $e) {
+            $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
+            $qResult->setCode(Result::CODE_ERROR)->setMsg('获取链接失败');
         } catch (GetTaskInfoException $e) {
             $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
             $qResult->setCode(Result::CODE_ERROR)->setMsg('获取任务信息失败');

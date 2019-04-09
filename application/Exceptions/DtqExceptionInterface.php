@@ -9,7 +9,6 @@
 namespace App\Exceptions;
 
 
-class InsertMsgToDbException extends DtqRuntimeException
+interface DtqExceptionInterface
 {
-
 }

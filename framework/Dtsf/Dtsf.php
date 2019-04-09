@@ -47,9 +47,8 @@ class Dtsf
             });
             
             $http->on('workerExit', function (Swoole\Http\Server $serv, int $worker_id) {
-//                WorkerApp::getInstance()->setWorkerStatus(WorkerApp::WORKEREXIT);
-//                DtsfInitProvider::getInstance()->workerExit($worker_id);
-                Log::info("worker {worker_id} exit.", ['{worker_id}' => $worker_id], 'stop');
+                WorkerApp::getInstance()->setWorkerStatus(WorkerApp::WORKEREXIT);
+                DtsfInitProvider::getInstance()->workerExit($worker_id);
             });
 
             $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) use ($http) {

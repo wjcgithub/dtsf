@@ -9,7 +9,7 @@
 namespace App\Exceptions;
 
 
-class GetTaskInfoException extends \Exception
+class GetTaskInfoException extends DtqRuntimeException
 {
 
 }
