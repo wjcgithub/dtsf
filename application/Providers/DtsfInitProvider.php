@@ -54,14 +54,14 @@ class DtsfInitProvider
 //                PoolManager::getInstance()->getPool($rabbitmqConfig['class'])->preLoad($rabbitmqConfig['min_object_num']);
             }
         }
-
+    
         if (Config::get('env') == 'testing') {
             $this->debugPoolInfo();
 //            $this->memoryInfo();
 //            $this->debugCoroutineInfo();
         }
     }
-
+    
     public function workerStop($worker_id){}
 
     public static function workerExit($worker_id)

@@ -16,7 +16,7 @@ use EasySwoole\Component\Pool\PoolObjectInterface;
 class CeleryMqObject extends \Celery implements PoolObjectInterface
 {
     public $objectName = '';
-
+    
     public function gc()
     {
         Log::debug("obj {obj} of worker {worker_id} start execting celeryMq gc, and current app status is {status}."
@@ -29,12 +29,12 @@ class CeleryMqObject extends \Celery implements PoolObjectInterface
         $this->recycleLastAck();
         $this->disconnect();
     }
-
+    
     public function objectRestore()
     {
         // 重置为初始状态
     }
-
+    
     /**
      * 每个链接使用之前 都会调用此方法 请返回 true / false
      * 返回false时PoolManager会回收该链接 并重新进入获取链接流程
@@ -42,6 +42,10 @@ class CeleryMqObject extends \Celery implements PoolObjectInterface
      */
     public function beforeUse(): bool
     {
-        return $this->getBrokerConnectStatus();
+        try {
+            return $this->getBrokerConnectStatus();
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }

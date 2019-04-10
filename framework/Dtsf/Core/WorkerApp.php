@@ -26,6 +26,8 @@ class WorkerApp extends WorkerBase
     {
         $this->debugDirName = 'debuginfo';
         $this->ackErrorDirName = 'mq_ack_error';
+        $this->errorHandlerDirName = 'error_handler_log';
+        $this->shutDownDirName = 'shut_down_log';
     }
 
     /**
@@ -43,7 +45,6 @@ class WorkerApp extends WorkerBase
         try {
             //加载配置，让此处加载的配置可热更新
             Config::loadLazy();
-            //日志初始化
             Log::init();
             if (PHP_OS != 'Darwin') {
                 $name = Config::get('server_name');
@@ -54,7 +55,7 @@ class WorkerApp extends WorkerBase
                 }
                 MainService::getInstance()->setProcessName("{$name}.{$type}.{$worker_id}");
             }
-            //给用户自己的权利去初始化
+            $this->registerErrorHandler();
             DtsfInitProvider::getInstance()->workerStart($worker_id);
             WorkerApp::getInstance()->setWorkerStatus(WorkerApp::WORKERSTARTED);
             Log::info("worker {worker_id} started.", ['{worker_id}' => $worker_id], 'start');
@@ -66,7 +67,39 @@ class WorkerApp extends WorkerBase
             $server->shutdown();
         }
     }
-
+    
+    /**
+     *
+     */
+    private function registerErrorHandler()
+    {
+        ini_set("display_errors", "On");
+        error_reporting(E_ALL | E_STRICT);
+        $userHandler = function($code, $message, $file = '', $line = 0, $context = array()){
+            Log::error("{code}  {line}  {file}  {message}", [
+                "{code}"=>$code,
+                "{line}"=>$line,
+                "{file}"=>$file,
+                "{message}"=>$message,
+            ], $this->errorHandlerDirName);
+        };
+        set_error_handler($userHandler);
+        
+        $func = function (){
+            $error = error_get_last();
+            if(!empty($error)){
+                Log::error("{code}  {line}  {file}  {message}", [
+                    "{code}"=>$error['code'],
+                    "{line}"=>$error['line'],
+                    "{file}"=>$error['file'],
+                    "{message}"=>$error['message'],
+                ], $this->shutDownDirName);
+            }
+        };
+        register_shutdown_function($func);
+    }
+    
+    
     /**
      * 设置worker状态
      * @param int $status

@@ -118,16 +118,16 @@ class ApiService extends AbstractService
         } catch (\InvalidArgumentException $e) {
             $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
             Log::error($msg, [], $this->dtqProducerErrorLog);
-            $qResult->setCode(Result::CODE_ERROR)->setMsg($e->getMessage());
+            $qResult->setCode(Result::CODE_ERROR)->setMsg($e->getMessage())->setData([]);
         } catch (GetDaoException $e) {
             $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
-            $qResult->setCode(Result::CODE_ERROR)->setMsg('获取链接失败');
+            $qResult->setCode(Result::CODE_ERROR)->setMsg('获取链接失败')->setData([]);
         } catch (GetTaskInfoException $e) {
             $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
-            $qResult->setCode(Result::CODE_ERROR)->setMsg('获取任务信息失败');
+            $qResult->setCode(Result::CODE_ERROR)->setMsg('获取任务信息失败')->setData([]);
         } catch (InsertMsgToDbException $e) {
             $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
-            $qResult->setCode(Result::CODE_ERROR)->setMsg("保存消息到db失败");
+            $qResult->setCode(Result::CODE_ERROR)->setMsg("保存消息到db失败")->setData([]);
         } catch (\Throwable $throwable) {
             $this->performExcepiton($throwable, $msgid, $tid, $payload, $qResult);
             Log::error("{worker_id} 致命错误, and current app status is {status}, msg: {msg}."
@@ -137,7 +137,7 @@ class ApiService extends AbstractService
                     '{msg}' => $throwable->getMessage() . '====trace:' . $throwable->getTraceAsString()
                 ]
                 , $this->dtqProducerErrorLog);
-            $qResult->setCode(Result::CODE_ERROR)->setMsg('操作失败');
+            $qResult->setCode(Result::CODE_ERROR)->setMsg('操作失败')->setData([]);
         }
         
         return $qResult->toJson();

@@ -22,7 +22,6 @@ trait Singleton
 
     /**
      * @param mixed ...$args
-     * @return mixed
      * @desc 进程内的全局单例
      */
     public static function getInstance(...$args)

@@ -20,10 +20,14 @@ class MysqlPdoPool extends AbstractPool
      */
     protected function createObject()
     {
-        $conf = Config::get('mysql.default.master');
-        return MysqlPdoObject::create("mysql:host={$conf['host']};dbname={$conf['database']}", $conf['user'], $conf['password'], []);
+        try {
+            $conf = Config::get('mysql.default.master');
+            return MysqlPdoObject::create("mysql:host={$conf['host']};dbname={$conf['database']}", $conf['user'], $conf['password'], []);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
-
+    
     public function getLength()
     {
         return $this->chan->length();

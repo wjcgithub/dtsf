@@ -26,7 +26,7 @@ class Dao
      * @param string $dbTag
      * @return mixed
      */
-    public function getDb($retries = 50)
+    public function getDb($retries = 5)
     {
         $coId = Coroutine::getId();
         if (empty($this->storage[$coId])) {
@@ -35,7 +35,7 @@ class Dao
             $this->storage[$coId] = PoolManager::getInstance()->getPool(Config::get($this->daoType . '.' . $this->connection . '.class'))
                 ->getObj();
             if (empty($this->storage[$coId])) {
-                if ($retries < 0) {
+                if ($retries <= 0) {
                     throw new GetDaoException("可用链接不足!");
                 }
                 Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请", [], 'dbpool');

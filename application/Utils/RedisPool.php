@@ -11,7 +11,6 @@ namespace App\Utils;
 
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
-use Dtsf\Db\Redis;
 use EasySwoole\Component\Pool\AbstractPool;
 
 class RedisPool extends AbstractPool
@@ -22,16 +21,20 @@ class RedisPool extends AbstractPool
      */
     protected function createObject()
     {
-        $config = Config::get('redis.db');
-        $redis = new RedisObject();
-        $res = $redis->connect($config);
-        if ($res === false) {
-            Log::error("Failed to connect redis server.");
-            throw new \RuntimeException('Failed to connect redis server.');
+        try {
+            $config = Config::get('redis.db');
+            $redis = new RedisObject();
+            $res = $redis->connect($config);
+            if ($res === false) {
+                Log::error("Failed to connect redis server.");
+                throw new \RuntimeException('Failed to connect redis server.');
+            }
+            return $redis;
+        } catch (\Throwable $e) {
+            return null;
         }
-        return $redis;
     }
-
+    
     public function getLength()
     {
         return $this->chan->length();
