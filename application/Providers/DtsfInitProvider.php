@@ -1,6 +1,7 @@
 <?php
 namespace App\Providers;
 
+use App\Exceptions\ExceptionLog;
 use App\Utils\Pool\CeleryMqPool;
 use App\Utils\Pool\SwooleMysqlPool;
 use App\Utils\Pool\SwooleRedisPool;
@@ -57,13 +58,23 @@ class DtsfInitProvider
     
         if (Config::get('env') == 'testing') {
             $this->debugPoolInfo();
-//            $this->memoryInfo();
-//            $this->debugCoroutineInfo();
+            $this->memoryInfo();
+            $this->debugCoroutineInfo();
         }
     }
     
-    public function workerStop($worker_id){}
-
+    /**
+     * worker stop
+     * @param $worker_id
+     */
+    public function workerStop($worker_id){
+        
+    }
+    
+    /**
+     * worker exit
+     * @param $worker_id
+     */
     public static function workerExit($worker_id)
     {
         //判断是不是worker进程
@@ -87,7 +98,7 @@ class DtsfInitProvider
                 'CeleryMqPool' => "pid: {worker_id}---CeleryMqPool----" . json_encode(PoolManager::getInstance()->getPool(CeleryMqPool::class)->status()),
                 'RedisPool' => "pid: {worker_id}---RedisPool----" . json_encode(PoolManager::getInstance()->getPool(SwooleRedisPool::class)->status()),
                 'MysqlPool' => "pid: {worker_id}---MysqlPool----" . json_encode(PoolManager::getInstance()->getPool(SwooleMysqlPool::class)->status())],
-                ['{worker_id}' => posix_getpid()], 'pool_num');
+                ['{worker_id}' => posix_getpid()], ExceptionLog::POOL_NUM);
         });
     }
     
@@ -107,7 +118,7 @@ class DtsfInitProvider
                 "M\r\n实际内存上涨" . (($actualyMemory1 - $actualyMemory) / 1048576) .
                 "M\r\n总峰值内存上涨" . (($totalPeakMemory1 - $totalPeakMemory) / 1048576) .
                 "M\r\n总峰值实际内存上涨" . (($actualyPeakMemory1 - $actualyPeakMemory) / 1048576) . 'M'
-                , [], 'memory_use');
+                , [], ExceptionLog::MEMORY_USE);
         });
     }
 
@@ -120,13 +131,13 @@ class DtsfInitProvider
             $croStat = \Swoole\Coroutine::stats();
             Log::info(
                 "\r\n协程情况" . json_encode($croStat)
-                , [], 'coroutine_info');
+                , [], ExceptionLog::CORO_INFO);
             if ($croStat['coroutine_num'] == 1) {
                 $coros = \Swoole\Coroutine::listCoroutines();
                 foreach ($coros as $cid) {
                     Log::info(
                         "pid:{pid} 协程具体情况" . json_encode(\Swoole\Coroutine::getBackTrace($cid))
-                        , ['{pid}' => posix_getpid()], 'coroutine_info');
+                        , ['{pid}' => posix_getpid()], ExceptionLog::CORO_INFO);
                 }
             }
 

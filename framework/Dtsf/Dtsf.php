@@ -1,7 +1,7 @@
 <?php
 namespace Dtsf;
 
-use App\Providers\DtsfInitProvider;
+use App\Exceptions\ExceptionLog;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Core\MainService;
@@ -40,27 +40,23 @@ class Dtsf
                 WorkerApp::getInstance()->workerStart($server, $worker_id);
             });
 
-            $http->on('workerStop', function (Swoole\Http\Server $serv, int $worker_id) {
-                WorkerApp::getInstance()->setWorkerStatus(WorkerApp::WORKERSTOPED);
-                DtsfInitProvider::getInstance()->workerStop($worker_id);
-                Log::info("worker {worker_id} stoped.", ['{worker_id}' => $worker_id], 'stop');
+            $http->on('workerStop', function (Swoole\Http\Server $server, int $worker_id) {
+                WorkerApp::getInstance()->workerStop($server, $worker_id);
             });
             
-            $http->on('workerExit', function (Swoole\Http\Server $serv, int $worker_id) {
-                WorkerApp::getInstance()->setWorkerStatus(WorkerApp::WORKEREXIT);
-                DtsfInitProvider::getInstance()->workerExit($worker_id);
+            $http->on('workerExit', function (Swoole\Http\Server $server, int $worker_id) {
+                WorkerApp::getInstance()->workerExit($server, $worker_id);
             });
 
             $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) use ($http) {
                 WorkerApp::getInstance()->performRequest($http, $request, $response);
-//
             });
 
             $http->start();
         } catch (\Exception $e) {
-            Log::info("server exception, trace is." . $e->getTraceAsString(), [], 'error');
+            Log::info("server exception, trace is." . $e->getTraceAsString(), [], ExceptionLog::SERVER_ERROR);
         } catch (\Throwable $e) {
-            Log::info("server Throwable, trace is." . $e->getTraceAsString(), [], 'error');
+            Log::info("server Throwable, trace is." . $e->getTraceAsString(), [], ExceptionLog::SERVER_ERROR);
         }
     }
 }

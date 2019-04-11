@@ -9,6 +9,7 @@
 namespace Dtsf\Mvc;
 
 
+use App\Exceptions\ExceptionLog;
 use Dtsf\Core\Log;
 
 class DbDao extends Dao
@@ -151,13 +152,13 @@ class DbDao extends Dao
             
             if (!$rest) {
                 $msg = '写入数据库异常---errno: ' . $dbObj->getLastErrno() . '---msg: ' . $dbObj->getLastError();
-                Log::error($msg, [], $this->db_error_log);
+                Log::error($msg, [], ExceptionLog::DB_ERROR);
             }
             
             return $rest;
         } catch (\Throwable $e) {
             $msg = '写入数据库异常---code: ' . $e->getCode() . '---msg: ' . $e->getMessage() . '---trace: ' . $e->getTraceAsString();
-            Log::error($msg, [], $this->db_error_log);
+            Log::error($msg, [], ExceptionLog::DB_ERROR);
         }
         return false;
     }

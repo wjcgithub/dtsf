@@ -9,6 +9,7 @@
 namespace App\Utils\Pool;
 
 
+use App\Exceptions\ExceptionLog;
 use Dtsf\Core\Log;
 use Dtsf\Core\WorkerApp;
 use EasySwoole\Component\Pool\PoolObjectInterface;
@@ -25,7 +26,7 @@ class CeleryMqObject extends \Celery implements PoolObjectInterface
                 '{worker_id}' => posix_getppid(),
                 '{status}' => WorkerApp::getInstance()->serverStatus
             ]
-            , WorkerApp::getInstance()->debugDirName);
+            , ExceptionLog::DEBUG);
         $this->recycleLastAck();
         $this->disconnect();
     }

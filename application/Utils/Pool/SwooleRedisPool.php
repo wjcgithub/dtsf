@@ -9,6 +9,7 @@
 namespace App\Utils\Pool;
 
 
+use App\Exceptions\ExceptionLog;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use EasySwoole\Component\Pool\AbstractPool;
@@ -26,7 +27,7 @@ class SwooleRedisPool extends AbstractPool
             $redis = new SwooleRedisObject();
             $res = $redis->connect($config);
             if ($res === false) {
-                Log::error("Failed to connect redis server.");
+                Log::error("Failed to connect redis server.", [], ExceptionLog::POOL_REDIS_LOG);
                 throw new \RuntimeException('Failed to connect redis server.');
             }
             return $redis;

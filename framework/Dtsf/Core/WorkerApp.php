@@ -8,6 +8,7 @@
 
 namespace Dtsf\Core;
 
+use App\Exceptions\ExceptionLog;
 use App\Providers\DtsfInitProvider;
 use Dtsf\Coroutine\Context;
 use Dtsf\Coroutine\Coroutine;
@@ -24,10 +25,6 @@ class WorkerApp extends WorkerBase
 
     private function __construct()
     {
-        $this->debugDirName = 'debuginfo';
-        $this->ackErrorDirName = 'mq_ack_error';
-        $this->errorHandlerDirName = 'error_handler_log';
-        $this->shutDownDirName = 'shut_down_log';
     }
 
     /**
@@ -58,18 +55,38 @@ class WorkerApp extends WorkerBase
             $this->registerErrorHandler();
             DtsfInitProvider::getInstance()->workerStart($worker_id);
             WorkerApp::getInstance()->setWorkerStatus(WorkerApp::WORKERSTARTED);
-            Log::info("worker {worker_id} started.", ['{worker_id}' => $worker_id], 'start');
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-            $server->shutdown();
-        } catch (\Throwable $throwable) {
-            Log::error($throwable->getMessage());
+            Log::info("worker {worker_id} started.", ['{worker_id}' => $worker_id], ExceptionLog::SERVER_START);
+        }catch (\Throwable $throwable) {
+            Log::error($throwable->getMessage(), [], ExceptionLog::SERVER_ERROR);
             $server->shutdown();
         }
     }
     
     /**
-     *
+     * worker stop
+     * @param $server
+     * @param $worker_id
+     */
+    public function workerStop($server, $worker_id)
+    {
+        Log::info("worker {worker_id} stoped.", ['{worker_id}' => $worker_id], ExceptionLog::SERVER_STOP);
+        $this->setWorkerStatus(WorkerApp::WORKERSTOPED);
+        DtsfInitProvider::getInstance()->workerStop($worker_id);
+    }
+    
+    /**
+     * worker exit
+     * @param $server
+     * @param $worker_id
+     */
+    public function workerExit($server, $worker_id)
+    {
+        $this->setWorkerStatus(WorkerApp::WORKEREXIT);
+        DtsfInitProvider::getInstance()->workerExit($worker_id);
+    }
+    
+    /**
+     * 异常处理
      */
     private function registerErrorHandler()
     {
@@ -81,7 +98,7 @@ class WorkerApp extends WorkerBase
                 "{line}"=>$line,
                 "{file}"=>$file,
                 "{message}"=>$message,
-            ], $this->errorHandlerDirName);
+            ], ExceptionLog::ERROR_HANDLER);
         };
         set_error_handler($userHandler);
         
@@ -93,7 +110,7 @@ class WorkerApp extends WorkerBase
                     "{line}"=>$error['line'],
                     "{file}"=>$error['file'],
                     "{message}"=>$error['message'],
-                ], $this->shutDownDirName);
+                ], ExceptionLog::SHUTDOWN_ERROR);
             }
         };
         register_shutdown_function($func);
@@ -139,23 +156,14 @@ class WorkerApp extends WorkerBase
             $result = Route::getInstance()->dispatch();
             $response->end($result);
         } catch (\Exception $e) { //程序异常
-            Log::exception($e);
+            Log::exception($e, ExceptionLog::SERVER_REQUEST);
             $context->getResponse()->withStatus(500);
         } catch (\Error $e) { //程序错误，如fatal error
-            Log::exception($e);
+            Log::exception($e, ExceptionLog::SERVER_REQUEST);
             $context->getResponse()->withStatus(500);
         } catch (\Throwable $e) {  //兜底
-            Log::exception($e);
+            Log::exception($e, ExceptionLog::SERVER_REQUEST);
             $context->getResponse()->withStatus(500);
         }
-    }
-
-    /**
-     * record log
-     * @param $request
-     */
-    public function recordAccessLog($request)
-    {
-        Log::info("path:".$request->getSwooleRequest()->server['path_info'].'----params:'.json_encode($request->getRequestParam()), [], 'accesslog');
     }
 }

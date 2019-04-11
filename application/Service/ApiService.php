@@ -16,6 +16,7 @@ use App\Dao\RabbitMqDao;
 use App\Dao\RedisDefaultDao;
 use App\Dao\TasksDao;
 use App\Entity\Result;
+use App\Exceptions\ExceptionLog;
 use App\Exceptions\GetDaoException;
 use App\Exceptions\GetTaskInfoException;
 use App\Exceptions\InsertMsgToDbException;
@@ -37,13 +38,6 @@ class ApiService extends AbstractService
     //msg
     const ACK = 1;
     const UNACK = 0;
-    
-    //当存储消息时候产生的异常日志
-    private $dtqProducerErrorLog = 'dtq_producer_error';
-    //当异常时将消息存储到db日志
-    private $dtqProducerToRabbitmqErrorLog = 'dtq_producer_to_rabbitmq_error';
-    //保存失败时候的原始数据
-    private $dtqOriginMsg = 'dtq_origin_msg';
     
     /**
      * @param string $msgid
@@ -69,7 +63,7 @@ class ApiService extends AbstractService
             //task type
             $paramsArr['t'] = $taskInfo['type'];
             $paramsArr['tid'] = $taskInfo['tid'];
-            if (!$op['fast']){
+            if (!$op['fast']) {
                 if (empty($msgid)) {
                     $msgid = uniqid($taskInfo['taskName'], TRUE);
                     $msgRes = MsgDao::getInstance()->add([
@@ -84,7 +78,7 @@ class ApiService extends AbstractService
                         throw new InsertMsgToDbException('insert msg to db error');
                     }
                 }
-            }else{
+            } else {
                 $msgid = uniqid($taskInfo['taskName'], TRUE);
             }
             
@@ -103,7 +97,7 @@ class ApiService extends AbstractService
                     );
                 } catch (\InvalidArgumentException $e) {
                     $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
-                    Log::error($msg, [], $this->dtqProducerErrorLog);
+                    Log::error($msg, [], ExceptionLog::DTQ_PRODUCER_ERROR);
                 } catch (\Throwable $throwable) {
                     Log::error("{worker_id} post to mq error on coroutine, and current app status is {status}, msg: {msg}."
                         , [
@@ -111,13 +105,13 @@ class ApiService extends AbstractService
                             '{status}' => WorkerApp::getInstance()->serverStatus,
                             '{msg}' => $throwable->getMessage() . '====trace:' . $throwable->getTraceAsString()
                         ]
-                        , $this->dtqProducerErrorLog);
+                        , ExceptionLog::DTQ_PRODUCER_ERROR);
                 }
             });
             $qResult->setCode(Result::CODE_SUCCESS)->setData($msgid)->setMsg('success');
         } catch (\InvalidArgumentException $e) {
             $msg = '普通异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
-            Log::error($msg, [], $this->dtqProducerErrorLog);
+            Log::error($msg, [], ExceptionLog::DTQ_PRODUCER_ERROR);
             $qResult->setCode(Result::CODE_ERROR)->setMsg($e->getMessage())->setData([]);
         } catch (GetDaoException $e) {
             $this->performExcepiton($e, $msgid, $tid, $payload, $qResult);
@@ -136,7 +130,7 @@ class ApiService extends AbstractService
                     '{status}' => WorkerApp::getInstance()->serverStatus,
                     '{msg}' => $throwable->getMessage() . '====trace:' . $throwable->getTraceAsString()
                 ]
-                , $this->dtqProducerErrorLog);
+                , ExceptionLog::DTQ_PRODUCER_ERROR);
             $qResult->setCode(Result::CODE_ERROR)->setMsg('操作失败')->setData([]);
         }
         
@@ -177,13 +171,13 @@ class ApiService extends AbstractService
                 throw new GetTaskInfoException('从数据库获取任务信息失败_2');
             }
             $result->setCode(Result::CODE_SUCCESS)->setMsg('success')->setData($taskInfo);
-            Log::error('redis服务链接异常, host:', [], $this->dtqProducerErrorLog);
+            Log::error('redis服务链接异常, host:', [], ExceptionLog::DTQ_PRODUCER_ERROR);
         } catch (\InvalidArgumentException $e) {
-            Log::error($e->getMessage() . '-----' . $e->getTraceAsString(), [], $this->dtqProducerErrorLog);
+            Log::error($e->getMessage() . '-----' . $e->getTraceAsString(), [], ExceptionLog::DTQ_PRODUCER_ERROR);
             $result->setCode(Result::CODE_ERROR)->setMsg($e->getMessage());
         } catch (\Exception $e) {
             $result->setCode(Result::CODE_ERROR)->setMsg('获取任务信息异常');
-            Log::error($e->getMessage() . '-----' . $e->getTraceAsString(), [], $this->dtqProducerErrorLog);
+            Log::error($e->getMessage() . '-----' . $e->getTraceAsString(), [], ExceptionLog::DTQ_PRODUCER_ERROR);
         }
         return $result;
     }
@@ -216,7 +210,7 @@ class ApiService extends AbstractService
                 throw new \InvalidArgumentException('该任务不存在, 或者已被禁用');
             }
         } catch (\Exception $e) {
-            Log::error('msg:' . $e->getMessage() . '---trace:' . $e->getTraceAsString(), [], 'db_error');
+            Log::error('生成缓存失败--msg:' . $e->getMessage() . '---trace:' . $e->getTraceAsString(), [], ExceptionLog::DTQ_PRODUCER_ERROR);
         }
         return $cacheValueArr;
     }
@@ -259,7 +253,7 @@ class ApiService extends AbstractService
     {
         $this->logMsgInfoOnException($tid, $payload);
         $msg = '异常-----code: ' . $e->getCode() . 'msg: ' . $e->getMessage() . 'trace: ' . $e->getTraceAsString();
-        Log::error($msg, [], $this->dtqProducerErrorLog);
+        Log::error($msg, [], ExceptionLog::DTQ_PRODUCER_ERROR);
         $errorParam = [];
         try {
             $errorParam['msgid'] = $msgid;
@@ -269,7 +263,7 @@ class ApiService extends AbstractService
             $errorParam['ctime'] = date('Y-m-d H:i:s');
             ProducerErrorMsgDao::getCoInstance()->add($errorParam);
         } catch (\Exception $e) {
-            Log::error('保存投递失败消息失败----msg' . $e->getMessage() . "--body:" . json_encode($errorParam), [], $this->dtqProducerToRabbitmqErrorLog);
+            Log::error('保存投递失败消息失败----msg' . $e->getMessage() . "--body:" . json_encode($errorParam), [], ExceptionLog::DTQ_PRODUCER_TO_MQ_ERROR);
         }
         
         $result->setCode(Result::CODE_SUCCESS)->setMsg('success');
@@ -284,6 +278,6 @@ class ApiService extends AbstractService
      */
     private function logMsgInfoOnException($tid, $payload)
     {
-        Log::error('tid:' . $tid . '----payload' . $payload, [], $this->dtqOriginMsg);
+        Log::error('tid:' . $tid . '----payload' . $payload, [], ExceptionLog::DTQ_ORIGIN_MSG);
     }
 }

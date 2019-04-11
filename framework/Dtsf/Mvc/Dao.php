@@ -9,6 +9,7 @@
 namespace Dtsf\Mvc;
 
 
+use App\Exceptions\ExceptionLog;
 use App\Exceptions\GetDaoException;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
@@ -38,7 +39,7 @@ class Dao
                 if ($retries <= 0) {
                     throw new GetDaoException("可用链接不足!");
                 }
-                Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请", [], 'dbpool');
+                Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请", [], ExceptionLog::GET_OBJECT_POOL);
                 return $this->getDb(--$retries);
             }else{
                 defer(function () {

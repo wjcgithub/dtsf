@@ -9,6 +9,7 @@
 namespace Dtsf\Core;
 
 
+use App\Exceptions\ExceptionLog;
 use Dtsf\Dtsf;
 
 class MainService
@@ -97,7 +98,7 @@ class MainService
             '{port}' => Config::get('port'),
             '{masterId}' => $serv->master_pid,
             '{managerId}' => $serv->manager_pid,
-        ], 'start');
+        ], ExceptionLog::SERVER_START);
 
         if (Config::get('enableHotReload')) {
             $this->enableHotReload();
@@ -109,7 +110,7 @@ class MainService
      */
     public function serverExit()
     {
-        Log::info("http server shutdown", [], 'shutdown');
+        Log::info("http server shutdown", [], ExceptionLog::SERVER_SHUTDOWN);
     }
 
     /**

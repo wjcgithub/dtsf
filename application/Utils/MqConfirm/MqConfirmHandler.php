@@ -10,13 +10,13 @@ namespace App\Utils\MqConfirm;
 
 
 use App\Dao\MsgDao;
+use App\Exceptions\ExceptionLog;
 use Dtsf\Core\Log;
 use PhpAmqpLib\Message\AMQPMessage;
 
 class MqConfirmHandler implements MqConfirmInterface
 {
     private $msgidPool = [];
-    private $mqConfirmLogDir = 'mq_confirm_log';
     public $last_access_time = 0;
     private $tick = 0;         //刷新缓冲区的句柄
     private $tickTime = 5000;  //刷新缓冲区的时间间隔
@@ -62,7 +62,7 @@ class MqConfirmHandler implements MqConfirmInterface
     public function nack(AMQPMessage $message)
     {
         $msg = "\r\n nack ok " . $message->get_properties()['reply_to'] . " \r\n";
-        Log::error($msg, [], $this->mqConfirmLogDir);
+        Log::error($msg, [], ExceptionLog::MQ_CONFIRM_ERROR);
     }
     
     /**
@@ -72,7 +72,7 @@ class MqConfirmHandler implements MqConfirmInterface
     public function returnMsg(array $params)
     {
         $msg = "\r\n return" . json_encode($params) . " \r\n";
-        Log::error($msg, [], $this->mqConfirmLogDir);
+        Log::error($msg, [], ExceptionLog::MQ_CONFIRM_ERROR);
     }
     
     /**
