@@ -6,24 +6,24 @@
  * Time: 下午4:55
  */
 
-namespace App\Utils;
+namespace App\Utils\Pool;
 
+use App\Utils\MqConfirm\MqConfirmHandler;
 use Dtsf\Core\Config;
-use Dtsf\Core\Log;
 use EasySwoole\Component\Pool\AbstractPool;
 
 class CeleryMqPool extends AbstractPool
 {
     /**
      * 请在此处返回一个数据库链接实例
-     * @return MysqlObject
+     * @return CeleryMqObject | null
      */
     protected function createObject()
     {
         try {
             $config = Config::get('celery.default');
-            $confirmObj = new MqConfirm();
-            $obj = new CeleryMqObject(
+            $confirmObj = new MqConfirmHandler();
+            $object = new CeleryMqObject(
                 $config['host'],
                 $config['uname'],
                 $config['pwd'],
@@ -47,15 +47,10 @@ class CeleryMqPool extends AbstractPool
                 $config['keepalive'],
                 $config['heartbeat']
             );
-            $obj->objectName = uniqid();
-            return $obj;
+            $object->objectName = uniqid();
+            return $object;
         } catch (\Throwable $e) {
             return null;
         }
-    }
-    
-    public function getLength()
-    {
-        return $this->chan->length();
     }
 }

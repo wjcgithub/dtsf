@@ -1,9 +1,9 @@
 <?php
 namespace App\Providers;
 
-use App\Utils\CeleryMqPool;
-use App\Utils\MysqlPool;
-use App\Utils\RedisPool;
+use App\Utils\Pool\CeleryMqPool;
+use App\Utils\Pool\SwooleMysqlPool;
+use App\Utils\Pool\SwooleRedisPool;
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use Dtsf\Core\Singleton;
@@ -85,8 +85,8 @@ class DtsfInitProvider
         swoole_timer_tick(2000, function () {
             Log::info([
                 'CeleryMqPool' => "pid: {worker_id}---CeleryMqPool----" . json_encode(PoolManager::getInstance()->getPool(CeleryMqPool::class)->status()),
-                'RedisPool' => "pid: {worker_id}---RedisPool----" . json_encode(PoolManager::getInstance()->getPool(RedisPool::class)->status()),
-                'MysqlPool' => "pid: {worker_id}---MysqlPool----" . json_encode(PoolManager::getInstance()->getPool(MysqlPool::class)->status())],
+                'RedisPool' => "pid: {worker_id}---RedisPool----" . json_encode(PoolManager::getInstance()->getPool(SwooleRedisPool::class)->status()),
+                'MysqlPool' => "pid: {worker_id}---MysqlPool----" . json_encode(PoolManager::getInstance()->getPool(SwooleMysqlPool::class)->status())],
                 ['{worker_id}' => posix_getpid()], 'pool_num');
         });
     }

@@ -6,7 +6,7 @@
  * Time: 下午4:05
  */
 
-namespace App\Utils;
+namespace App\Utils\MqConfirm;
 
 
 use PhpAmqpLib\Message\AMQPMessage;

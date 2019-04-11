@@ -6,7 +6,7 @@
  * Time: 下午4:55
  */
 
-namespace App\Utils;
+namespace App\Utils\Pool;
 
 
 use Dtsf\Core\Log;

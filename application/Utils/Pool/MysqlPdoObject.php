@@ -1,5 +1,5 @@
 <?php
-namespace App\Utils;
+namespace App\Utils\Pool;
 
 /**
  * Created by PhpStorm.
@@ -23,8 +23,6 @@ class MysqlPdoObject extends Factory implements PoolObjectInterface
 
     function objectRestore()
     {
-        // 重置为初始状态
-//        $this->resetDbStatus();
     }
 
     /**

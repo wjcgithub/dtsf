@@ -6,24 +6,24 @@
  * Time: 下午6:10
  */
 
-namespace App\Utils;
+namespace App\Utils\Pool;
 
 
 use Dtsf\Core\Config;
 use Dtsf\Core\Log;
 use EasySwoole\Component\Pool\AbstractPool;
 
-class RedisPool extends AbstractPool
+class SwooleRedisPool extends AbstractPool
 {
     /**
-     * 请在此处返回一个数据库链接实例
-     * @return MysqlObject
+     * 请在此处返回一个redis链接实例
+     * @return SwooleRedisObject
      */
     protected function createObject()
     {
         try {
             $config = Config::get('redis.db');
-            $redis = new RedisObject();
+            $redis = new SwooleRedisObject();
             $res = $redis->connect($config);
             if ($res === false) {
                 Log::error("Failed to connect redis server.");
@@ -33,10 +33,5 @@ class RedisPool extends AbstractPool
         } catch (\Throwable $e) {
             return null;
         }
-    }
-    
-    public function getLength()
-    {
-        return $this->chan->length();
     }
 }

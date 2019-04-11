@@ -6,14 +6,14 @@
  * Time: 下午4:05
  */
 
-namespace App\Utils;
+namespace App\Utils\MqConfirm;
 
 
 use App\Dao\MsgDao;
 use Dtsf\Core\Log;
 use PhpAmqpLib\Message\AMQPMessage;
 
-class MqConfirm implements MqConfirmInterface
+class MqConfirmHandler implements MqConfirmInterface
 {
     private $msgidPool = [];
     private $mqConfirmLogDir = 'mq_confirm_log';
@@ -22,6 +22,10 @@ class MqConfirm implements MqConfirmInterface
     private $tickTime = 5000;  //刷新缓冲区的时间间隔
     private $cacheNum = 200;   //缓冲区大小
     
+    /**
+     * 初始化缓冲区刷新定时器
+     * MqConfirm constructor.
+     */
     public function __construct()
     {
         $this->tick = swoole_timer_tick($this->tickTime, function () {
@@ -38,6 +42,10 @@ class MqConfirm implements MqConfirmInterface
         }
     }
     
+    /**
+     * msg ack handler
+     * @param AMQPMessage $message
+     */
     public function ack(AMQPMessage $message)
     {
         array_push($this->msgidPool, strval($message->get_properties()['reply_to']));
@@ -47,12 +55,20 @@ class MqConfirm implements MqConfirmInterface
         $this->last_access_time = time();
     }
     
+    /**
+     * msg nack handler
+     * @param AMQPMessage $message
+     */
     public function nack(AMQPMessage $message)
     {
         $msg = "\r\n nack ok " . $message->get_properties()['reply_to'] . " \r\n";
         Log::error($msg, [], $this->mqConfirmLogDir);
     }
     
+    /**
+     * return msg handler
+     * @param array $params
+     */
     public function returnMsg(array $params)
     {
         $msg = "\r\n return" . json_encode($params) . " \r\n";
@@ -60,7 +76,7 @@ class MqConfirm implements MqConfirmInterface
     }
     
     /**
-     * 刷新数据到数据库
+     * flush msg to db
      */
     private function flushToDb()
     {
@@ -77,7 +93,10 @@ class MqConfirm implements MqConfirmInterface
         $this->msgidPool = [];
     }
     
-    public function flushMsgidPool()
+    /**
+     * flush msg to db trigger and update access time
+     */
+    protected function flushMsgidPool()
     {
         if (empty($this->msgidPool)) {
             return;
@@ -86,6 +105,10 @@ class MqConfirm implements MqConfirmInterface
         $this->last_access_time = time();
     }
     
+    /**
+     * get msg pool length
+     * @return int
+     */
     public function getCacheLength()
     {
         return count($this->msgidPool);

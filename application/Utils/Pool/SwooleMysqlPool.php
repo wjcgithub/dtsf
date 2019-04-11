@@ -6,30 +6,28 @@
  * Time: 下午6:10
  */
 
-namespace App\Utils;
+namespace App\Utils\Pool;
 
 
 use Dtsf\Core\Config;
 use EasySwoole\Component\Pool\AbstractPool;
 
-class MysqlPdoPool extends AbstractPool
+class SwooleMysqlPool extends AbstractPool
 {
     /**
      * 请在此处返回一个数据库链接实例
-     * @return MysqlPdoObject
+     * @return SwooleMysqlObject
      */
     protected function createObject()
     {
         try {
             $conf = Config::get('mysql.default.master');
-            return MysqlPdoObject::create("mysql:host={$conf['host']};dbname={$conf['database']}", $conf['user'], $conf['password'], []);
+            $dbConf = new \EasySwoole\Mysqli\Config($conf);
+            $mysqlObj = new SwooleMysqlObject($dbConf);
+            $mysqlObj->connect();
+            return $mysqlObj;
         } catch (\Throwable $e) {
             return null;
         }
-    }
-    
-    public function getLength()
-    {
-        return $this->chan->length();
     }
 }

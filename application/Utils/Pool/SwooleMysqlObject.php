@@ -1,5 +1,5 @@
 <?php
-namespace App\Utils;
+namespace App\Utils\Pool;
 
 /**
  * Created by PhpStorm.
@@ -7,22 +7,25 @@ namespace App\Utils;
  * Date: 18-12-29
  * Time: 下午6:04
  */
-use Dtsf\Db\Redis\Redis;
 use EasySwoole\Component\Pool\PoolObjectInterface;
+use EasySwoole\Mysqli\Mysqli;
 
-class RedisObject extends Redis implements PoolObjectInterface
+class SwooleMysqlObject extends Mysqli implements PoolObjectInterface
 {
     function gc()
     {
+        // 重置为初始状态
+        $this->resetDbStatus();
         // 关闭数据库连接
-        $this->closeRedis();
+        $this->disconnect();
     }
-
+    
     function objectRestore()
     {
         // 重置为初始状态
+        $this->resetDbStatus();
     }
-
+    
     /**
      * 每个链接使用之前 都会调用此方法 请返回 true / false
      * 返回false时PoolManager会回收该链接 并重新进入获取链接流程
@@ -30,12 +33,10 @@ class RedisObject extends Redis implements PoolObjectInterface
      */
     function beforeUse(): bool
     {
-        try{
-            // 此处可以进行链接是否断线的判断 使用不同的数据库操作类时可以根据自己情况修改
-            return $this->getRedis()->connected;
-        }catch (\Throwable $e) {
+        try {
+            return $this->getMysqlClient()->connected;
+        } catch (\Throwable $e) {
             return null;
         }
-        
     }
 }
