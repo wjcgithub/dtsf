@@ -14,6 +14,6 @@ if (! function_exists('app')) {
      */
     function app(string $name)
     {
-        return \Dtsf\Core\WorkerApp::getCoInstance()->getContainer()->get($name);
+        return \Dtsf\Core\WorkerApp::getInstance()->getContainer()->get($name);
     }
 }
