@@ -5,3 +5,5 @@ composer.lock
 /bin/*.service
 /vendor/*
 /core.*
+/test/*
+/debug/*
