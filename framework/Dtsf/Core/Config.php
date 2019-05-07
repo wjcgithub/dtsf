@@ -26,7 +26,7 @@ class Config
     public static function load()
     {
         $configPath = Dtsf::$applicationPath . DS . 'Config';
-        self::$config = \Noodlehaus\Config::load($configPath . DS . 'default.php');
+        self::$config = \Noodlehaus\Config::load($configPath . DS . 'server.php');
     }
 
 
@@ -36,7 +36,11 @@ class Config
      */
     public static function loadLazy()
     {
-        $configPath = Dtsf::$applicationPath . DS . 'Config/lazy';
+        $configPath = Dtsf::$applicationPath . DS . 'Config/';
+        $configArr[] = $configPath.'mysql.php';
+        $configArr[] = $configPath.'celery.php';
+        $configArr[] = $configPath.'redis.php';
+        $configArr[] = $configPath.'router.php';
         $config = new \Noodlehaus\Config($configPath);
         self::$config->merge($config);
     }

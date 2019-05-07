@@ -1,0 +1,106 @@
+server
+server_name: dtsf
+env: proc
+host: 0.0.0.0
+port: 9501
+time_zone: Asia/Shanghai
+log_dir: ''
+swoole_setting:
+ worker_num: 5
+ max_request: 10000
+ max_coroutine: 20000
+ reload_async: TRUE
+ log_file: swoole_error_log.log
+ max_wait_time: 30
+ daemonize: FALSE
+
+
+celery
+celery:
+ default:
+    class: \\App\\Utils\\Pool\\CeleryMqPool
+    interval_check_time: 120000
+    max_idle_time: 30
+    max_object_num: 50
+    min_object_num: 3
+    get_object_timeout: 0.2
+    host: develop
+    port: 56729
+    uname: guest
+    pwd: guest
+    vhost: first
+    exchange: first
+    connection_timeout: 3
+    read_write_timeout: 2
+    keepalive: TRUE
+    heartbeat: 0
+
+mysql
+mysql:
+ default:
+    class: \\App\\Utils\\Pool\\SwooleMysqlPool
+    interval_check_time: 120000
+    max_idle_time: 30
+    max_object_num: 50
+    min_object_num: 3
+    get_object_timeout: 0.2
+    master:
+        host: 127.0.0.1
+        port: 3306
+        user: root
+        password: brave
+        database: xin_dtq
+        timeout: 100
+        charset: utf8mb4
+        strict_type: TRUE
+    slave:
+        0:
+            host: 12
+            port: 3306
+            user: root
+            password: brave
+            database: xin_dtq
+            timeout: 100
+            charset: utf8mb4
+            strict_type: TRUE
+        1:
+            host: 12
+            port: 3306
+            user: root
+            password: brave
+            database: xin_dtq
+            timeout: 100
+            charset: utf8mb4
+            strict_type: TRUE
+
+
+redis
+redis:
+ default:
+    class: \\App\\Utils\\Pool\\SwooleRedisPool
+    interval_check_time: 120000
+    max_idle_time: 30
+    max_object_num: 50
+    min_object_num: 3
+    get_object_timeout: 0.2
+    host: 127.0.0.1
+    port: 6379
+    db: 1
+    options:
+        connect_timeout: 1
+        timeout: 100
+        reconnect: 5
+ db:
+    class: \\App\\Utils\\Pool\\SwooleRedisPool
+    interval_check_time: 120000
+    max_idle_time: 30
+    max_object_num: 50
+    min_object_num: 3
+    get_object_timeout: 0.2
+    host: 127.0.0.1
+    port: 6379
+    db: 1
+    options:
+        connect_timeout: 1
+        timeout: 100
+        reconnect: 5

@@ -7,3 +7,5 @@ composer.lock
 /core.*
 /test/*
 /debug/*
+/grpc/*
+/apollo/.apollo

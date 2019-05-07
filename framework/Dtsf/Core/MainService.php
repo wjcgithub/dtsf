@@ -99,7 +99,6 @@ class MainService
             '{masterId}' => $serv->master_pid,
             '{managerId}' => $serv->manager_pid,
         ], ExceptionLog::SERVER_START);
-
         if (Config::get('enableHotReload')) {
             $this->enableHotReload();
         }

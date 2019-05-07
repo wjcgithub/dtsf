@@ -19,7 +19,9 @@
         "paragonie/easydb": "^2",
         "wangjichao/swoole-celery": "*",
         "easyswoole/mysqli": "^1.1",
-        "php-amqplib/php-amqplib": "^2.9"
+        "php-amqplib/php-amqplib": "^2.9",
+        "grpc/grpc": "^1.19",
+        "google/protobuf": "^3.7"
     },
     "autoload": {
         "classmap": [],

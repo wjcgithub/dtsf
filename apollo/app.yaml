@@ -1,0 +1,11 @@
+appid: dtq_api
+cluster: default
+namespaces:
+  - server.yaml
+  - mysql.yaml
+  - celery.yaml
+  - redis.yaml
+ip: develop:8089
+generator: php
+suffix: php
+path: ../application/Config
