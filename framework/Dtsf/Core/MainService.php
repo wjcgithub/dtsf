@@ -10,7 +10,9 @@ namespace Dtsf\Core;
 
 
 use App\Exceptions\ExceptionLog;
+use App\Utils\Common\Common;
 use Dtsf\Dtsf;
+use EasySwoole\Utility\File;
 
 class MainService
 {
@@ -117,17 +119,28 @@ class MainService
      */
     public function enableHotReload()
     {
+        // 因为进程独立 且当前是自定义进程 全局变量只有该进程使用
+        // 在确定不会造成污染的情况下 也可以合理使用全局变量
+        global $lastReloadTime;
+        $lastReloadTime = 0;
+        
         //创建一个inotify句柄
-        $fd = inotify_init();
-
-        $this->hotReloadWatchDescriptor = inotify_add_watch($fd, Dtsf::$applicationPath . '/',
+        $notify = inotify_init();
+        $files = File::scanDirectory(Dtsf::$applicationPath . '/Config');
+        $list = array_merge($files['files'], $files['dirs']);
+        inotify_add_watch($notify, Dtsf::$applicationPath . '/',
             IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_ATTRIB);
-        swoole_event_add($fd, function ($fd) {
-            $events = inotify_read($fd);
-            if ($events) {
-                foreach ($events as $event) {
-                    echo "inotify Event :" . var_export($event, 1) . "\n";
-                }
+        foreach ($list as $item) {
+            inotify_add_watch($notify, $item, IN_CREATE | IN_DELETE | IN_MODIFY);
+        }
+        
+        swoole_event_add($notify, function ($notify) {
+            global $lastReloadTime;
+            $events = inotify_read($notify);
+            if ($lastReloadTime < time() && !empty($events)) { // 限制1s内不能进行重复reload
+                $lastReloadTime = time();
+                echo $lastReloadTime;
+                MainService::getInstance()->getMainServer()->reload();
             }
         });
     }
