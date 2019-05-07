@@ -37,10 +37,6 @@ class Config
     public static function loadLazy()
     {
         $configPath = Dtsf::$applicationPath . DS . 'Config/';
-        $configArr[] = $configPath.'mysql.php';
-        $configArr[] = $configPath.'celery.php';
-        $configArr[] = $configPath.'redis.php';
-        $configArr[] = $configPath.'router.php';
         $config = new \Noodlehaus\Config($configPath);
         self::$config->merge($config);
     }
