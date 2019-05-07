@@ -9,3 +9,10 @@ composer.lock
 /debug/*
 /grpc/*
 /apollo/.agollo
+application/Config/celery\.php
+
+application/Config/mysql\.php
+
+application/Config/redis\.php
+
+application/Config/server\.php
