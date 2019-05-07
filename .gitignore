@@ -8,4 +8,4 @@ composer.lock
 /test/*
 /debug/*
 /grpc/*
-/apollo/.apollo
+/apollo/.agollo
