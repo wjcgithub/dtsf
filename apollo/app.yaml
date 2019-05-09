@@ -5,7 +5,7 @@ namespaces:
   - mysql.yaml
   - celery.yaml
   - redis.yaml
-ip: develop:8089
+ip: 10.70.120.79:8089
 generator: php
 suffix: php
 path: ../application/Config
