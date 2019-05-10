@@ -7,21 +7,12 @@ services:
     restart: always
     mem_limit: 512m
     working_dir: /home/www-data/dtsf
-#    networks:
-#      net1:
-#        ipv4_address: 10.9.0.10
     hostname: dtsf_server
     ports:
       - "9505:9501"
-    volumes:
-      - "/home/wwwroot/demo/php_file/swoole/dtsf:/home/www-data/dtsf"
+    volumes_from:
+      - apollo_www_data
     command: "php application/index.php"
-#    env_file:
-#      - ./parameters.env
-#    environment:
-#      - CONTAINER_NAME=rmqha_node0
-#      - RABBITMQ_HOSTNAME=rmqha_node0
-#      - RABBITMQ_NODENAME=rabbit
 
   apollo_config:
     image: swoole:v10
@@ -30,21 +21,22 @@ services:
     working_dir: /home/www-data/dtsf
     depends_on:
       - dtsf_server
-    mem_limit: 256m
-#    networks:
-#      net1:
-#        ipv4_address: 10.9.0.11
+    mem_limit: 512m
     hostname: apollo_config
-    links:
+    volumes_from:
       - dtsf_server
-#    volumes－from:
-#      - dtsf_server
-    entrypoint: "/usr/local/bin/cluster_entrypoint.sh"
-    command: "/sh /apollo/apollo_client"
-#    env_file:
-#      - ./parameters.env
-#    environment:
-#      - CONTAINER_NAME=rmqha_node1
-#      - RABBITMQ_HOSTNAME=rmqha_node1
-#      - RABBITMQ_NODENAME=rabbit
-#      - RMQHA_RAM_NODE=true
+    command: "./apollo/apollo_client > /tmp/apollo.txt 2>&1"
+    environment:
+      - CLYTIE_APPID=dtq_api
+      - CLYTIE_CLUSTER=default
+      - CLYTIE_NAMESPACES=server.yaml mysql.yaml celery.yaml redis.yaml
+      - CLYTIE_IP=10.70.120.79:8089
+      - CLYTIE_GENERATOR=php
+      - CLYTIE_SUFFIX=php
+      - CLYTIE_PATH=../application/Config
+
+  apollo_www_data:
+    image: alpine:latest
+    container_name: apollo_www_data
+    volumes:
+      - /home/wwwroot/demo/php_file/swoole/dtsf:/home/www-data/dtsf

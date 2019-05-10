@@ -32,6 +32,13 @@ class SwooleRedisPool extends AbstractPool
             }
             return $redis;
         } catch (\Throwable $e) {
+            Log::error("{worker_id} create redis error, and current app status is {status}, msg: {msg}."
+                , [
+                    '{worker_id}' => posix_getppid(),
+                    '{status}' => WorkerApp::getInstance()->serverStatus,
+                    '{msg}' => $e->getMessage() . '====trace:' . $e->getTraceAsString()
+                ]
+                , ExceptionLog::POOL_REDIS_LOG);
             return null;
         }
     }

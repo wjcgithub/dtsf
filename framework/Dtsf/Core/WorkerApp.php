@@ -106,10 +106,10 @@ class WorkerApp extends WorkerBase
             $error = error_get_last();
             if(!empty($error)){
                 Log::error("{code}  {line}  {file}  {message}", [
-                    "{code}"=>$error['code'],
-                    "{line}"=>$error['line'],
-                    "{file}"=>$error['file'],
-                    "{message}"=>$error['message'],
+                    "{code}"=>isset($error['code']) ? $error['code'] : '',
+                    "{line}"=>isset($error['line']) ? $error['line'] : '',
+                    "{file}"=>isset($error['file']) ? $error['file'] : '',
+                    "{message}"=>isset($error['message']) ? $error['message'] : '',
                 ], ExceptionLog::SHUTDOWN_ERROR);
             }
         };
