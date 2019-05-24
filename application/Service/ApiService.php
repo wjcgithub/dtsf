@@ -24,6 +24,10 @@ use Dtsf\Core\Log;
 use Dtsf\Core\WorkerApp;
 use Dtsf\Db\Redis\DtRedisReException;
 
+/**
+ * Class ApiService
+ * @package App\Service
+ */
 class ApiService extends AbstractService
 {
     const TASKPREX = 'celery:task';
