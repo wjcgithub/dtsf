@@ -14,7 +14,7 @@ composer install
 ```php
 docker pull wangjichao/dtsf_api
 cd dtsf/docker
-docker-compose up
+docker-compose up  or  docker-compose up -d
 ```
 > 如果不需要apollo配置中心支持可先注释docker-compose中的`apollo_config`配置
 
