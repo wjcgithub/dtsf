@@ -9,3 +9,4 @@ test/*
 debug/*
 grpc/*
 apollo/.agollo
+.agollo

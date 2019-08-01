@@ -4,7 +4,7 @@ return [
         "default" => [
             "class" => "\\App\\Utils\\Pool\\SwooleRedisPool",
             "min_object_num" => 3,
-            "host" => "10.70.120.126",
+            "host" => "127.0.0.1",
             "port" => 6379,
             "db" => 1,
             "options" => [
@@ -27,7 +27,7 @@ return [
             "interval_check_time" => 120000,
             "min_object_num" => 3,
             "get_object_timeout" => 0.2,
-            "host" => "10.70.120.126",
+            "host" => "127.0.0.1",
             "port" => 6379,
             "db" => 1,
             "max_idle_time" => 30,

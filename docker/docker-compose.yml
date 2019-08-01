@@ -2,7 +2,7 @@ version: "2"
 services:
 
   dtsf_server:
-    image: dtsf_api:latest
+    image: wangjichao/dtsf_api:latest
     container_name: dtsf_server
     restart: always
     mem_limit: 512m
@@ -15,7 +15,7 @@ services:
     command: "php application/index.php"
 
   apollo_config:
-    image: dtsf_api:latest
+    image: wangjichao/dtsf_api:latest
     container_name: apollo_config
     restart: always
     working_dir: /home/www-data/dtsf

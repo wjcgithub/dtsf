@@ -37,7 +37,7 @@ class Dao
                 ->getObj();
             if (empty($this->storage[$coId])) {
                 if ($retries <= 0) {
-                    throw new GetDaoException("可用链接不足!");
+                    throw new GetDaoException($this->daoType . '.' . $this->connection . '.class---'."可用链接不足!");
                 }
                 Log::emergency($this->daoType . '.' . $this->connection . "链接不够用了-再次申请", [], ExceptionLog::GET_OBJECT_POOL);
                 return $this->getDb(--$retries);
