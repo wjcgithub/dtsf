@@ -1,12 +1,12 @@
 <?php
 return [
     "swoole_setting" => [
-        "worker_num" => 5,
-        "max_request" => 10000,
+        "worker_num" => 1,
+        "max_request" => 100000,
         "max_coroutine" => 20000,
         "reload_async" => true,
         "log_file" => "swoole_error_log.log",
-        "max_wait_time" => 30,
+        "max_wait_time" => 20,
         "daemonize" => false,
     ],
     "server_name" => "dtsf",

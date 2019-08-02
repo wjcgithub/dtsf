@@ -54,11 +54,16 @@ class ApiService extends AbstractService
         $qResult = Result::getCoInstance();
         try {
             $qResult = $this->getTaskInfoByTid($tid);
+            $taskInfo = $qResult->getData();
             if ($qResult->getCode() == Result::CODE_ERROR) {
                 return $qResult->toJson();
             }
-            
-            $taskInfo = $qResult->getData();
+
+            if (empty($taskInfo)) {
+                Log::error("严重错误，获取的任务信息为空还正常返回" . json_encode($taskInfo), [], ExceptionLog::DTQ_PRODUCER_ERROR);
+                return $qResult->toJson();
+            }
+
             $paramsArr = [];
             //task message body
             $paramsArr['p'] = $payload;
@@ -67,6 +72,7 @@ class ApiService extends AbstractService
             //task type
             $paramsArr['t'] = $taskInfo['type'];
             $paramsArr['tid'] = $taskInfo['tid'];
+
             if (!$op['fast']) {
                 if (empty($msgid)) {
                     $msgid = uniqid($taskInfo['taskName'], TRUE);
@@ -147,7 +153,8 @@ class ApiService extends AbstractService
      */
     private function getTaskInfoByTid($tid)
     {
-        $result = Result::getInstance();
+        $result = Result::getCoInstance();
+        $result->setCode(Result::CODE_ERROR)->setMsg("error");
         $redis = null;
         try {
             $taskInfoStr = '';
@@ -155,33 +162,29 @@ class ApiService extends AbstractService
             //这里单独链接，是为了设置超时时间，而不影获取任务信息异常响其他使用者
             $mtid = $this->makeTid($tid);
             //缓存不存在，回写缓存
-            if (empty($taskInfoStr = $redis->get($mtid))) {
+            $taskInfoStr = $redis->get($mtid);
+            if (empty($taskInfoStr)) {
                 $taskInfo = $this->generateCacheArr($tid);
                 if (empty($taskInfo)) {
                     throw new GetTaskInfoException('从数据库获取任务信息失败_1');
                 }
+                //回写缓存
                 $taskInfoStr = json_encode($taskInfo);
                 $redis->setex($mtid, self::CACHETIMEOUT, $taskInfoStr);
+                $result->setCode(Result::CODE_SUCCESS)->setMsg('success')->setData($taskInfo);
+            }else{
+                $taskArr = json_decode($taskInfoStr, True);
+                $result->setCode(Result::CODE_SUCCESS)->setMsg('success')->setData($taskArr);
             }
-            if (!empty($taskInfoStr)) {
-                $result->setCode(Result::CODE_SUCCESS)->setMsg('success')->setData(json_decode($taskInfoStr, True));
-            } else {
-                $result->setCode(Result::CODE_ERROR)->setMsg('获取任务信息失败');
-            }
-        } catch (DtRedisReException $e) {
+        } catch (\Exception $e) {
             //缓存链接失败，或超时，读取数据库，并返回结果，防止缓存关掉接口不能用
             $taskInfo = $this->generateCacheArr($tid);
             if (empty($taskInfo)) {
                 throw new GetTaskInfoException('从数据库获取任务信息失败_2');
+            }else{
+                $result->setCode(Result::CODE_SUCCESS)->setMsg('success')->setData($taskInfo);
             }
-            $result->setCode(Result::CODE_SUCCESS)->setMsg('success')->setData($taskInfo);
-            Log::error('redis服务链接异常, host:', [], ExceptionLog::DTQ_PRODUCER_ERROR);
-        } catch (\InvalidArgumentException $e) {
-            Log::error($e->getMessage() . '-----' . $e->getTraceAsString(), [], ExceptionLog::DTQ_PRODUCER_ERROR);
-            $result->setCode(Result::CODE_ERROR)->setMsg($e->getMessage());
-        } catch (\Exception $e) {
-            $result->setCode(Result::CODE_ERROR)->setMsg('获取任务信息异常');
-            Log::error($e->getMessage() . '-----' . $e->getTraceAsString(), [], ExceptionLog::DTQ_PRODUCER_ERROR);
+            Log::error('redis服务链接异常, msg:-'.$e->getMessage().' --- taskInfo: '.json_encode($taskInfo).' host:', [], ExceptionLog::DTQ_PRODUCER_ERROR);
         }
         return $result;
     }
@@ -208,13 +211,14 @@ class ApiService extends AbstractService
                     $cacheValueArr['type'] = $taskInfo->type;
                     $cacheValueArr['tid'] = $taskInfo->id;
                 } else {
-                    throw new \InvalidArgumentException('该任务所在队列不存在');
+                    throw new GetTaskInfoException('该任务所在队列不存在');
                 }
             } else {
-                throw new \InvalidArgumentException('该任务不存在, 或者已被禁用');
+                throw new GetTaskInfoException('该任务不存在, 或者已被禁用');
             }
         } catch (\Exception $e) {
-            Log::error('生成缓存失败--msg:' . $e->getMessage() . '---trace:' . $e->getTraceAsString(), [], ExceptionLog::DTQ_PRODUCER_ERROR);
+            Log::error('生成缓存失败 '.get_class($e).'----cacheValueArr'.json_encode($cacheValueArr).'---msg:' . $e->getMessage() . '---trace:' . $e->getTraceAsString(), [], ExceptionLog::DTQ_PRODUCER_ERROR);
+            throw new GetTaskInfoException('生成缓存失败---msg'.$e->getMessage().'---trace:' . $e->getTraceAsString());
         }
         return $cacheValueArr;
     }

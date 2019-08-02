@@ -49,7 +49,13 @@ class Dtsf
             });
 
             $http->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) use ($http) {
+//                tideways_xhprof_swoole_init();
+//                tideways_xhprof_enable(TIDEWAYS_XHPROF_FLAGS_MEMORY
+//                    | TIDEWAYS_XHPROF_FLAGS_CPU);
                 WorkerApp::getInstance()->performRequest($http, $request, $response);
+//                file_put_contents("/tmp/xhprof" . DIRECTORY_SEPARATOR . uniqid() . '.dtsf.xhprof',
+//                    serialize(tideways_xhprof_disable()));
+//                tideways_xhprof_swoole_end();
             });
 
             $http->start();
