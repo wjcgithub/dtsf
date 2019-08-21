@@ -4,6 +4,8 @@
 # 特点
 1. 上下文支持
 2. 已封装redis, mysql, celery-mq连接池
+3. 支持apollo配置
+4. docker的支持
 
 ## 环境配置
 
